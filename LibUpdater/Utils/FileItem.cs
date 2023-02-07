@@ -2,11 +2,7 @@
 {
     internal class FileItem : IFileItem
     {
-        public FileItem(string path)
-        {
-            this.Path = path;
-        }
-
-        public string Path { get; }
+        public string Path { get; set; }
+        public long Size { get; set; }
     }
 }

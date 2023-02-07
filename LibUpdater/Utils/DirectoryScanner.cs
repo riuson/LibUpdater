@@ -12,7 +12,7 @@ namespace LibUpdater.Utils
             var di = new DirectoryInfo(path);
 
             var result = di.EnumerateFiles("*", SearchOption.AllDirectories)
-                .Select(x => new FileItem(x.FullName))
+                .Select(x => new FileItem() { Path = x.FullName, Size = x.Length })
                 .OrderBy(x => x.Path)
                 .ToArray();
 
