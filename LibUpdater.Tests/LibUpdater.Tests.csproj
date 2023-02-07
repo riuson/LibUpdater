@@ -23,4 +23,8 @@
 		<EmbeddedResource Include="Samples\**\*.json" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\LibUpdater\LibUpdater.csproj" />
+	</ItemGroup>
+
 </Project>

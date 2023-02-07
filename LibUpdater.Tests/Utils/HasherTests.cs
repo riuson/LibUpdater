@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using LibUpdater.Utils;
 
 namespace LibUpdater.Tests.Utils
 {
@@ -38,7 +39,7 @@ namespace LibUpdater.Tests.Utils
 
                 if (match.Success)
                 {
-                    yield return (name, match.Value);
+                    yield return (name, match.Value.ToLower());
                 }
             }
         }
