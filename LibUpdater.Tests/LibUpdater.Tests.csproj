@@ -24,7 +24,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\LibUpdater\LibUpdater.csproj" />
+		<ProjectReference Include="..\LibUpdater\LibUpdater.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="Samples2\**\*" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 </Project>
