@@ -4,6 +4,5 @@ namespace LibUpdater
 {
     public class Class1
     {
-
     }
 }
