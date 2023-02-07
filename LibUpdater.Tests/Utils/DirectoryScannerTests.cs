@@ -49,5 +49,16 @@ namespace LibUpdater.Tests.Utils
 
             Assert.That(items.All(x => x.Size == 1), Is.True);
         }
+
+        [Test]
+        public void DirectoryScannerShouldGetFileHash()
+        {
+            var scanner = new DirectoryScanner();
+            var expectedHash = "356a192b7913b04c54574d18c28d46e6395428ab"; // File with content "1".
+
+            var items = scanner.ScanTree(this.samplesPath);
+
+            Assert.That(items.All(x => x.Hash == expectedHash), Is.True);
+        }
     }
 }
