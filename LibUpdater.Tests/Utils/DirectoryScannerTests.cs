@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using LibUpdater.Utils;
 
 namespace LibUpdater.Tests.Utils
 {
