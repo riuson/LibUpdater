@@ -2,5 +2,5 @@
 
 public class AnalyzeResult
 {
-    public bool IsEquals { get; }
+    public bool IsEquals { get; set; }
 }

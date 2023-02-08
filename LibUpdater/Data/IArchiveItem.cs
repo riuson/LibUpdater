@@ -6,11 +6,6 @@
     public interface IArchiveItem : IFileItem
     {
         /// <summary>
-        /// Gets relative path for unpacking.
-        /// </summary>
-        string UnpackPath { get; }
-
-        /// <summary>
         /// Gets size of archive in bytes.
         /// </summary>
         long ArchiveSize { get; }

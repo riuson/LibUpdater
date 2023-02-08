@@ -40,7 +40,6 @@ namespace LibUpdater.Tests.Utils
                     .Do(x => x.SetupGet(y => y.Path).Returns("file1.txt"))
                     .Do(x => x.SetupGet(y => y.Hash).Returns("1234"))
                     .Do(x => x.SetupGet(y => y.Size).Returns(1234L))
-                    .Do(x => x.SetupGet(y => y.UnpackPath).Returns("file1.txt"))
                     .Do(x => x.SetupGet(y => y.ArchiveHash).Returns("abcd"))
                     .Do(x => x.SetupGet(y => y.ArchiveSize).Returns(564564L))
                     .Object,
@@ -48,7 +47,6 @@ namespace LibUpdater.Tests.Utils
                     .Do(x => x.SetupGet(y => y.Path).Returns("dir/file2.txt"))
                     .Do(x => x.SetupGet(y => y.Hash).Returns("123456"))
                     .Do(x => x.SetupGet(y => y.Size).Returns(123456L))
-                    .Do(x => x.SetupGet(y => y.UnpackPath).Returns("dir/file2.txt"))
                     .Do(x => x.SetupGet(y => y.ArchiveHash).Returns("abcd"))
                     .Do(x => x.SetupGet(y => y.ArchiveSize).Returns(564564L))
                     .Object,
