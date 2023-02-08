@@ -1,4 +1,4 @@
-﻿namespace LibUpdater.Utils
+﻿namespace LibUpdater.Data
 {
     internal class FileItem : IFileItem
     {

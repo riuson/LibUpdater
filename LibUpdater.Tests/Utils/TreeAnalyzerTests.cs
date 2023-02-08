@@ -1,6 +1,6 @@
-﻿using LibUpdater.Utils;
-using System.Reflection;
+﻿using System.Reflection;
 using Moq;
+using LibUpdater.Data;
 
 namespace LibUpdater.Tests.Utils
 {
