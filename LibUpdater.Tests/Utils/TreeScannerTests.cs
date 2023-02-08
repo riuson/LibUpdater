@@ -3,7 +3,7 @@ using LibUpdater.Utils;
 
 namespace LibUpdater.Tests.Utils
 {
-    internal class DirectoryScannerTests
+    internal class TreeScannerTests
     {
         private string _samplesPath;
 
@@ -17,7 +17,7 @@ namespace LibUpdater.Tests.Utils
         [Test]
         public void DirectoryScannerShouldScan()
         {
-            var scanner = new DirectoryScanner();
+            var scanner = new TreeScanner();
 
             var items = scanner.ScanTree(this._samplesPath);
 
@@ -31,7 +31,7 @@ namespace LibUpdater.Tests.Utils
         [Test]
         public void DirectoryScannerShouldSort()
         {
-            var scanner = new DirectoryScanner();
+            var scanner = new TreeScanner();
 
             var items = scanner.ScanTree(this._samplesPath).Select(x => x.Path);
 
@@ -43,7 +43,7 @@ namespace LibUpdater.Tests.Utils
         [Test]
         public void DirectoryScannerShouldGetFileSize()
         {
-            var scanner = new DirectoryScanner();
+            var scanner = new TreeScanner();
 
             var items = scanner.ScanTree(this._samplesPath);
 
@@ -53,7 +53,7 @@ namespace LibUpdater.Tests.Utils
         [Test]
         public void DirectoryScannerShouldGetFileHash()
         {
-            var scanner = new DirectoryScanner();
+            var scanner = new TreeScanner();
             var expectedHash = "356a192b7913b04c54574d18c28d46e6395428ab"; // File with content "1".
 
             var items = scanner.ScanTree(this._samplesPath);

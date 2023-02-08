@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace LibUpdater.Utils
 {
-    public class DirectoryScanner
+    public class TreeScanner
     {
         private readonly Hasher _hasher = new Hasher();
 
