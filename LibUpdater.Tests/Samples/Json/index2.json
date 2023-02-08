@@ -1,0 +1,30 @@
+[
+  {
+    "path": "LibUpdater.dll",
+    "sourceSize": 10240,
+    "sourceHash": "6146e3bcd55200cdd8de2c8ba207ebb1ff717322",
+    "resultSize": 4278,
+    "resultHash": "c150297e6efd6e8b59957d7e2544e9b874b806f7"
+  },
+  {
+    "path": "LibUpdater.pdb",
+    "sourceSize": 10584,
+    "sourceHash": "cc77c30e4145fdf0e6752c7eba1ec7c718bd9583",
+    "resultSize": 5503,
+    "resultHash": "8d354638f5bec9ccc63fa4784828d196d1494873"
+  },
+  {
+    "path": "LibUpdater.Tests.dll",
+    "sourceSize": 38400,
+    "sourceHash": "3b0e664c330e926989dd92e5f8eb6fb2c6297e18",
+    "resultSize": 10330,
+    "resultHash": "22e8f874084673d09c784524b5c6551859ffeaf9"
+  },
+  {
+    "path": "LibUpdater.Tests.pdb",
+    "sourceSize": 17932,
+    "sourceHash": "15b16d08f2e3bb1655f3f4aaf39429b856efc262",
+    "resultSize": 8929,
+    "resultHash": "366c5aa66c6b31233ddf6c88c13561ab327b541a"
+  }
+]

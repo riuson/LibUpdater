@@ -51,7 +51,7 @@ namespace LibUpdater.Tests
         /// <param name="acceptName">Check that found resource name is accepted.</param>
         /// <returns>Collection of names.</returns>
         public static IEnumerable<string> GetEmbeddedResourceNames(Func<string, bool> acceptName) =>
-            Assembly.GetExecutingAssembly().GetManifestResourceNames();
+            Assembly.GetExecutingAssembly().GetManifestResourceNames().Where(acceptName);
 
         /// <summary>
         /// Find resource, read it and return as string.
