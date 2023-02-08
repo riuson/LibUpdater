@@ -1,9 +1,23 @@
 ﻿namespace LibUpdater.Utils
 {
+    /// <summary>
+    /// Interface for local file.
+    /// </summary>
     public interface IFileItem
     {
+        /// <summary>
+        /// Gets absolute local path to file.
+        /// </summary>
         string Path { get; }
-        long Size { get; set; }
-        string Hash { get; set; }
+
+        /// <summary>
+        /// Gets size of file in bytes.
+        /// </summary>
+        long Size { get; }
+
+        /// <summary>
+        /// Gets SHA-1 hash of file.
+        /// </summary>
+        string Hash { get; }
     }
 }
