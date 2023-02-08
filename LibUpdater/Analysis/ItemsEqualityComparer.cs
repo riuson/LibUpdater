@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using LibUpdater.Data;
 
@@ -20,7 +21,7 @@ internal class ItemsEqualityComparer : IEqualityComparer<IFileItem>
         if (ReferenceEquals(y, null)) return false;
 
         if (x.Size != y.Size) return false;
-        if (x.Hash != y.Hash) return false;
+        if (x.Hash.ToLower() != y.Hash.ToLower()) return false;
 
         var pathX = Path.IsPathRooted(x.Path) ? x.Path : Path.Combine(targetDirectory, x.Path);
         var pathY = Path.IsPathRooted(y.Path) ? y.Path : Path.Combine(targetDirectory, y.Path);
@@ -36,9 +37,13 @@ internal class ItemsEqualityComparer : IEqualityComparer<IFileItem>
     {
         unchecked
         {
-            var hashCode = obj.Path != null ? obj.Path.GetHashCode() : 0;
+            var path = Path.IsPathRooted(obj.Path) ? obj.Path : Path.Combine(targetDirectory, obj.Path);
+            var fileInfo = new FileInfo(path);
+            path = fileInfo.FullName;
+
+            var hashCode = path != null ? path.GetHashCode() : 0;
             hashCode = (hashCode * 397) ^ obj.Size.GetHashCode();
-            hashCode = (hashCode * 397) ^ (obj.Hash != null ? obj.Hash.GetHashCode() : 0);
+            hashCode = (hashCode * 397) ^ (obj.Hash != null ? obj.Hash.ToLower().GetHashCode() : 0);
             return hashCode;
         }
     }

@@ -1,6 +1,11 @@
-﻿namespace LibUpdater.Tests.Utils;
+﻿using System.Collections.Generic;
+using LibUpdater.Data;
 
-public class AnalyzeResult
+namespace LibUpdater.Tests.Utils;
+
+internal class AnalyzeResult : IAnalyzeResult
 {
-    public bool IsEquals { get; set; }
+    public bool IsEquals { get; set; } = false;
+    public IEnumerable<IFileItem> Obsolete { get; set; } = new IFileItem[] { };
+    public IEnumerable<IArchiveItem> Added { get; set; } = new IArchiveItem[] { };
 }

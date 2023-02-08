@@ -7,7 +7,7 @@ namespace LibUpdater.Tests.Utils;
 
 public class TreeAnalyzer
 {
-    public AnalyzeResult Analyze(
+    public IAnalyzeResult Analyze(
         string targetDirectory,
         IEnumerable<IFileItem> localItems,
         IEnumerable<IArchiveItem> remoteItems)
@@ -16,17 +16,21 @@ public class TreeAnalyzer
         var localItemsOrdered = localItems.OrderBy(x => x.Path);
         var remoteItemsOrdered = remoteItems.OrderBy(x => x.Path);
 
-        if (localItemsOrdered.SequenceEqual(remoteItemsOrdered.Cast<IFileItem>(), comparer))
-        {
-            return new AnalyzeResult()
-            {
-                IsEquals = true,
-            };
-        }
+        var isEquals = localItemsOrdered.SequenceEqual(remoteItemsOrdered, comparer);
+
+        var obsoleteItems = localItemsOrdered
+            .Except(remoteItemsOrdered, comparer)
+            .ToArray();
+        var addedItems = remoteItemsOrdered
+            .Except(localItemsOrdered, comparer)
+            .Cast<IArchiveItem>()
+            .ToArray();
 
         return new AnalyzeResult()
         {
-            IsEquals = false,
+            IsEquals = isEquals,
+            Added = addedItems,
+            Obsolete = obsoleteItems,
         };
     }
 }
