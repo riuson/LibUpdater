@@ -5,13 +5,13 @@ namespace LibUpdater.Tests.Utils
 {
     internal class DirectoryScannerTests
     {
-        private string samplesPath;
+        private string _samplesPath;
 
         [SetUp]
         public void Setup()
         {
             var assemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            this.samplesPath = Path.Combine(assemblyPath, "Samples2", "DirStruct");
+            this._samplesPath = Path.Combine(assemblyPath, "Samples2", "DirStruct");
         }
 
         [Test]
@@ -19,7 +19,7 @@ namespace LibUpdater.Tests.Utils
         {
             var scanner = new DirectoryScanner();
 
-            var items = scanner.ScanTree(this.samplesPath);
+            var items = scanner.ScanTree(this._samplesPath);
 
             Assert.That(items.Count(), Is.EqualTo(4));
             Assert.That(items.Any(x => x.Path.Contains(@"DirStruct\file.txt")), Is.True);
@@ -33,7 +33,7 @@ namespace LibUpdater.Tests.Utils
         {
             var scanner = new DirectoryScanner();
 
-            var items = scanner.ScanTree(this.samplesPath).Select(x => x.Path);
+            var items = scanner.ScanTree(this._samplesPath).Select(x => x.Path);
 
             var sortedItems = items.OrderBy(x => x);
 
@@ -45,7 +45,7 @@ namespace LibUpdater.Tests.Utils
         {
             var scanner = new DirectoryScanner();
 
-            var items = scanner.ScanTree(this.samplesPath);
+            var items = scanner.ScanTree(this._samplesPath);
 
             Assert.That(items.All(x => x.Size == 1), Is.True);
         }
@@ -56,7 +56,7 @@ namespace LibUpdater.Tests.Utils
             var scanner = new DirectoryScanner();
             var expectedHash = "356a192b7913b04c54574d18c28d46e6395428ab"; // File with content "1".
 
-            var items = scanner.ScanTree(this.samplesPath);
+            var items = scanner.ScanTree(this._samplesPath);
 
             Assert.That(items.All(x => x.Hash == expectedHash), Is.True);
         }
