@@ -16,27 +16,23 @@ namespace LibUpdater.Utils
 
             var result = di.EnumerateFiles("*", SearchOption.AllDirectories)
                 .Select(x => new FileItem() { Path = x.FullName, Size = x.Length })
+                .AsParallel().WithDegreeOfParallelism(degreeOfParallelism)
+                .Select(CalculateHash)
                 .OrderBy(x => x.Path)
                 .ToArray();
-
-            Parallel.ForEach(
-                result,
-                new ParallelOptions()
-                {
-                    MaxDegreeOfParallelism = degreeOfParallelism,
-                },
-                CalculateHash);
 
             return result;
         }
 
-        private void CalculateHash(FileItem item)
+        private FileItem CalculateHash(FileItem item)
         {
             using (var stream = new FileStream(item.Path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 var hash = hasher.HashStream(stream);
                 item.Hash = hash;
             }
+
+            return item;
         }
     }
 }
