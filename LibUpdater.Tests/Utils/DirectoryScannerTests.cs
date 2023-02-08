@@ -33,9 +33,9 @@ namespace LibUpdater.Tests.Utils
         {
             var scanner = new DirectoryScanner();
 
-            var items = scanner.ScanTree(this.samplesPath);
+            var items = scanner.ScanTree(this.samplesPath).Select(x => x.Path);
 
-            var sortedItems = items.OrderBy(x => x.Path);
+            var sortedItems = items.OrderBy(x => x);
 
             Assert.That(items, Is.EqualTo(sortedItems));
         }
