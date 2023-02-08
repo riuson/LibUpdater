@@ -24,6 +24,9 @@ public class TreeAnalyzer
             };
         }
 
-        throw new NotImplementedException();
+        return new AnalyzeResult()
+        {
+            IsEquals = false,
+        };
     }
 }
