@@ -13,8 +13,10 @@ public class TreeAnalyzer
         IEnumerable<IArchiveItem> remoteItems)
     {
         var comparer = new ItemsEqualityComparer(targetDirectory);
+        var localItemsOrdered = localItems.OrderBy(x => x.Path);
+        var remoteItemsOrdered = remoteItems.OrderBy(x => x.Path);
 
-        if (localItems.SequenceEqual(remoteItems.Cast<IFileItem>(), comparer))
+        if (localItemsOrdered.SequenceEqual(remoteItemsOrdered.Cast<IFileItem>(), comparer))
         {
             return new AnalyzeResult()
             {
