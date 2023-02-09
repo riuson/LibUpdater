@@ -24,7 +24,6 @@ internal class IndexDecoder
             while (props.MoveNext())
             {
                 var prop = props.Current;
-                Console.WriteLine($"{prop.Name}: {prop.Value}");
 
                 switch (prop.Name)
                 {
