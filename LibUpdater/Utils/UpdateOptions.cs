@@ -1,4 +1,4 @@
-﻿namespace LibUpdater;
+﻿namespace LibUpdater.Utils;
 
 public class UpdateOptions
 {

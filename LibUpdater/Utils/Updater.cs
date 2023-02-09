@@ -1,7 +1,6 @@
-﻿using LibUpdater.Utils;
-using System;
+﻿using System;
 
-namespace LibUpdater;
+namespace LibUpdater.Utils;
 
 public class Updater
 {
@@ -12,14 +11,16 @@ public class Updater
         _downloader = downloader;
     }
 
-    public void Update(UpdateOptions options)
+    public string GetLatestVersion(UpdateOptions options)
     {
         var versionUri = new Uri(
             new Uri(options.UpdatesUri),
             options.VersionFile);
 
-        var latestVersionString = this._downloader
-            .DownloadString(options.UpdatesUri)
+        var latestVersionString = _downloader
+            .DownloadString(versionUri.AbsoluteUri)
             .Trim();
+
+        return latestVersionString;
     }
 }
