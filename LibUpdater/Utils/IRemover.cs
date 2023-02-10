@@ -1,4 +1,6 @@
-﻿namespace LibUpdater.Utils;
+﻿using System.Threading.Tasks;
+
+namespace LibUpdater.Utils;
 
 public interface IRemover
 {
@@ -8,4 +10,6 @@ public interface IRemover
     /// </summary>
     /// <param name="path">Path to file.</param>
     void Remove(string path);
+
+    Task RemoveAsync(string path);
 }

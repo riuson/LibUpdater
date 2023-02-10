@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace LibUpdater.Utils;
 
@@ -15,5 +16,10 @@ internal class Remover : IRemover
         var dirsCount = directory.GetDirectories("*", SearchOption.TopDirectoryOnly).Length;
 
         if (filesCount == 0 && dirsCount == 0) directory.Delete(true);
+    }
+
+    public Task RemoveAsync(string path)
+    {
+        return Task.Run(() => Remove(path));
     }
 }
