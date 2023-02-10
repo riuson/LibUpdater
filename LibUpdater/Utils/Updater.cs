@@ -88,9 +88,16 @@ public class Updater
         }
 
         foreach (var archiveItem in archiveItems)
+        {
+            var targetPath = archiveItemTargetPath(archiveItem);
+            var targetDir = Path.GetDirectoryName(targetPath);
+
+            if (!Directory.Exists(targetDir)) Directory.CreateDirectory(targetDir);
+
             _unpacker.Unpack(
                 archiveItemSourcePath(archiveItem),
-                archiveItemTargetPath(archiveItem));
+                targetPath);
+        }
     }
 
     private static string CombineUrl(params string[] segments)
