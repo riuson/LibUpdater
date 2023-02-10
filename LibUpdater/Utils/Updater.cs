@@ -10,6 +10,12 @@ public class Updater
     private readonly IDownloader _downloader;
     private readonly IUnpacker _unpacker;
 
+    public Updater()
+    {
+        _downloader = new Downloader();
+        _unpacker = new Unpacker();
+    }
+
     public Updater(
         IDownloader downloader,
         IUnpacker unpacker)
