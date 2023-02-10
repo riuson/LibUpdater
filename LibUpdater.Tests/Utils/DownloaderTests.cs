@@ -9,15 +9,15 @@ internal class DownloaderTests
     [SetUp]
     public void SetUp()
     {
-        this._tempFile = Path.GetTempFileName();
+        _tempFile = Path.GetTempFileName();
     }
 
     [TearDown]
     public void TearDown()
     {
-        File.Delete(this._tempFile);
+        File.Delete(_tempFile);
     }
-    
+
     [Ignore("Requires server")]
     [TestCase("https://updates1.riuson.com/version.txt", "ver1")]
     public void DownloadStringShouldGetString(string uri, string expectedValue)
@@ -31,13 +31,24 @@ internal class DownloaderTests
 
     [Ignore("Requires server")]
     [TestCase("https://updates1.riuson.com/version.txt", "ver1")]
+    public async Task DownloadStringShouldGetStringAsync(string uri, string expectedValue)
+    {
+        var downloader = new Downloader();
+
+        var value = await downloader.DownloadStringAsync(uri);
+
+        Assert.That(value.Trim(), Is.EqualTo(expectedValue.Trim()));
+    }
+
+    [Ignore("Requires server")]
+    [TestCase("https://updates1.riuson.com/version.txt", "ver1")]
     public void DownloadFileShouldGetFile(string uri, string expectedValue)
     {
         var downloader = new Downloader();
 
-        downloader.DownloadFile(uri, this._tempFile);
+        downloader.DownloadFile(uri, _tempFile);
 
-        var value = File.ReadAllText(this._tempFile);
+        var value = File.ReadAllText(_tempFile);
 
         Assert.That(value.Trim(), Is.EqualTo(expectedValue.Trim()));
     }
@@ -48,11 +59,11 @@ internal class DownloaderTests
     {
         var downloader = new Downloader();
 
-        File.WriteAllText(this._tempFile, "some content");
+        File.WriteAllText(_tempFile, "some content");
 
-        downloader.DownloadFile(uri, this._tempFile);
+        downloader.DownloadFile(uri, _tempFile);
 
-        var value = File.ReadAllText(this._tempFile);
+        var value = File.ReadAllText(_tempFile);
 
         Assert.That(value.Trim(), Is.EqualTo(expectedValue.Trim()));
     }
