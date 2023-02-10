@@ -9,6 +9,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\LibUpdater\LibUpdater.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
 		<PackageReference Include="Moq" Version="4.18.4" />
 		<PackageReference Include="NUnit" Version="3.13.3" />
@@ -18,14 +22,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Remove="Samples\**\*.txt" />
-		<None Remove="Samples\**\*.json" />
-		<EmbeddedResource Include="Samples\**\*.txt" />
-		<EmbeddedResource Include="Samples\**\*.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\LibUpdater\LibUpdater.csproj" />
+		<None Remove="Samples\**\*.*" />
+		<EmbeddedResource Include="Samples\**\*.*" />
 	</ItemGroup>
 
 	<ItemGroup>
