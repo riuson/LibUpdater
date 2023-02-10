@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using SevenZipExtractor;
 
 namespace LibUpdater.Utils;
@@ -17,11 +18,21 @@ internal class Unpacker : IUnpacker
         entry.Extract(targetStream);
     }
 
+    public Task UnpackAsync(Stream sourceStream, Stream targetStream)
+    {
+        return Task.Run(() => Unpack(sourceStream, targetStream));
+    }
+
     public void Unpack(string sourcePath, string targetPath)
     {
         using var sourceStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Read);
         using var targetStream = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.Read);
 
         Unpack(sourceStream, targetStream);
+    }
+
+    public Task UnpackAsync(string sourcePath, string targetPath)
+    {
+        return Task.Run(() => Unpack(sourcePath, targetPath));
     }
 }
