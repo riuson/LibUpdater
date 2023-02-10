@@ -56,19 +56,22 @@ public class Updater
         string version,
         IEnumerable<IArchiveItem> archiveItems)
     {
-        string archiveItemUri(IArchiveItem item)
+        string archiveItemUri(string hash)
         {
-            return CombineUrl(options.UpdatesUri, version, item.Hash);
+            return CombineUrl(options.UpdatesUri, version, hash);
         }
 
-        string archiveItemPath(IArchiveItem item)
+        string archiveItemPath(string hash)
         {
-            return Path.Combine(options.TempDir, item.Hash);
+            return Path.Combine(options.TempDir, hash);
         }
 
-        archiveItems.AsParallel()
+        archiveItems
+            .Select(x => x.Hash)
+            .Distinct()
+            .AsParallel()
             .WithDegreeOfParallelism(options.DegreeOfParallelism)
-            .ForAll(item => _downloader.DownloadFile(archiveItemUri(item), archiveItemPath(item)));
+            .ForAll(hash => _downloader.DownloadFile(archiveItemUri(hash), archiveItemPath(hash)));
     }
 
     public void ApplyArchiveItems(

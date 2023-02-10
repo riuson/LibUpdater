@@ -62,7 +62,7 @@ internal class UpdaterTests
     }
 
     [Test]
-    public void GetArchiveItemsShould()
+    public void GetArchiveItemsShouldReceive()
     {
         IEnumerable<IArchiveItem> archiveItems = new[]
         {
@@ -95,6 +95,62 @@ internal class UpdaterTests
             t.DownloadFile("https://localhost/version1/1234", Path.Combine(options.TempDir, "1234")));
         downloaderMock.Verify(t =>
             t.DownloadFile("https://localhost/version1/123456", Path.Combine(options.TempDir, "123456")));
+    }
+
+    [Test]
+    public void GetArchiveItemsShouldSkipDuplicates()
+    {
+        IEnumerable<IArchiveItem> archiveItems = new[]
+        {
+            new Mock<IArchiveItem>()
+                .Do(x => x.SetupGet(y => y.Path).Returns("file1.txt"))
+                .Do(x => x.SetupGet(y => y.Hash).Returns("1234"))
+                .Do(x => x.SetupGet(y => y.Size).Returns(1234L))
+                .Object,
+            new Mock<IArchiveItem>()
+                .Do(x => x.SetupGet(y => y.Path).Returns("dir/file2.txt"))
+                .Do(x => x.SetupGet(y => y.Hash).Returns("123456"))
+                .Do(x => x.SetupGet(y => y.Size).Returns(123456L))
+                .Object,
+            new Mock<IArchiveItem>()
+                .Do(x => x.SetupGet(y => y.Path).Returns("file1_another.txt"))
+                .Do(x => x.SetupGet(y => y.Hash).Returns("1234"))
+                .Do(x => x.SetupGet(y => y.Size).Returns(1234L))
+                .Object,
+            new Mock<IArchiveItem>()
+                .Do(x => x.SetupGet(y => y.Path).Returns("dir/file2_new.txt"))
+                .Do(x => x.SetupGet(y => y.Hash).Returns("123456"))
+                .Do(x => x.SetupGet(y => y.Size).Returns(123456L))
+                .Object,
+            new Mock<IArchiveItem>()
+                .Do(x => x.SetupGet(y => y.Path).Returns("dir/file3.txt"))
+                .Do(x => x.SetupGet(y => y.Hash).Returns("12345678"))
+                .Do(x => x.SetupGet(y => y.Size).Returns(123456L))
+                .Object
+        };
+
+        var downloaderMock = new Mock<IDownloader>();
+        downloaderMock.Setup(mock => mock.DownloadFile(It.IsAny<string>(), It.IsAny<string>()))
+            .Verifiable();
+
+        var updater = new Updater(downloaderMock.Object, null);
+
+        var options = new UpdateOptions();
+        options.UpdatesUri = "https://localhost";
+        options.TempDir = Path.GetTempPath();
+        options.DegreeOfParallelism = 2;
+
+        updater.GetArchiveItems(options, "version1", archiveItems);
+
+        downloaderMock.Verify(t =>
+            t.DownloadFile("https://localhost/version1/1234", Path.Combine(options.TempDir, "1234")),
+            Times.Once);
+        downloaderMock.Verify(t =>
+            t.DownloadFile("https://localhost/version1/123456", Path.Combine(options.TempDir, "123456")),
+            Times.Once);
+        downloaderMock.Verify(t =>
+            t.DownloadFile("https://localhost/version1/12345678", Path.Combine(options.TempDir, "12345678")),
+            Times.Once);
     }
 
     [Test]
