@@ -14,7 +14,7 @@ internal class UpdaterTests
             .Returns("version1")
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object, null);
+        var updater = new Updater(downloaderMock.Object, null, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost:81";
@@ -36,7 +36,7 @@ internal class UpdaterTests
             .Returns(json)
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object, null);
+        var updater = new Updater(downloaderMock.Object, null, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost";
@@ -82,7 +82,7 @@ internal class UpdaterTests
         downloaderMock.Setup(mock => mock.DownloadFile(It.IsAny<string>(), It.IsAny<string>()))
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object, null);
+        var updater = new Updater(downloaderMock.Object, null, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost";
@@ -133,7 +133,7 @@ internal class UpdaterTests
         downloaderMock.Setup(mock => mock.DownloadFile(It.IsAny<string>(), It.IsAny<string>()))
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object, null);
+        var updater = new Updater(downloaderMock.Object, null, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost";
@@ -143,13 +143,13 @@ internal class UpdaterTests
         updater.GetArchiveItems(options, "version1", archiveItems);
 
         downloaderMock.Verify(t =>
-            t.DownloadFile("https://localhost/version1/1234", Path.Combine(options.TempDir, "1234")),
+                t.DownloadFile("https://localhost/version1/1234", Path.Combine(options.TempDir, "1234")),
             Times.Once);
         downloaderMock.Verify(t =>
-            t.DownloadFile("https://localhost/version1/123456", Path.Combine(options.TempDir, "123456")),
+                t.DownloadFile("https://localhost/version1/123456", Path.Combine(options.TempDir, "123456")),
             Times.Once);
         downloaderMock.Verify(t =>
-            t.DownloadFile("https://localhost/version1/12345678", Path.Combine(options.TempDir, "12345678")),
+                t.DownloadFile("https://localhost/version1/12345678", Path.Combine(options.TempDir, "12345678")),
             Times.Once);
     }
 
@@ -174,7 +174,7 @@ internal class UpdaterTests
         unpackerMock.Setup(mock => mock.Unpack(It.IsAny<string>(), It.IsAny<string>()))
             .Verifiable();
 
-        var updater = new Updater(null, unpackerMock.Object);
+        var updater = new Updater(null, unpackerMock.Object, null);
 
         var options = new UpdateOptions
         {
@@ -193,6 +193,40 @@ internal class UpdaterTests
             t.Unpack(
                 @"C:\Temp\123456".AdjustDirSeparator(),
                 @"C:\Target\dir\file2.txt".AdjustDirSeparator()));
+    }
+
+    [Test]
+    public void CleanupObsoleteShould()
+    {
+        IEnumerable<IFileItem> obsoleteItems = new[]
+        {
+            new Mock<IFileItem>()
+                .Do(x => x.SetupGet(y => y.Path).Returns("file1.txt"))
+                .Do(x => x.SetupGet(y => y.Hash).Returns("1234"))
+                .Do(x => x.SetupGet(y => y.Size).Returns(1234L))
+                .Object,
+            new Mock<IFileItem>()
+                .Do(x => x.SetupGet(y => y.Path).Returns("dir/file2.txt"))
+                .Do(x => x.SetupGet(y => y.Hash).Returns("123456"))
+                .Do(x => x.SetupGet(y => y.Size).Returns(123456L))
+                .Object
+        };
+
+        var removerMock = new Mock<IRemover>();
+        removerMock.Setup(mock => mock.Remove(It.IsAny<string>()))
+            .Verifiable();
+
+        var updater = new Updater(null, null, null);
+
+        var options = new UpdateOptions();
+        options.TargetDir = @"C:\Windows\Temp".AdjustDirSeparator();
+
+        updater.CleanupObsoleteItems(options, obsoleteItems);
+
+        removerMock.Verify(t =>
+            t.Remove(@"C:\Windows\Temp\file1.txt".AdjustDirSeparator()));
+        removerMock.Verify(t =>
+            t.Remove(@"C:\Windows\Temp\dir\file2.txt".AdjustDirSeparator()));
     }
 
     private static IEnumerable<string> TestJsonIndexResources()

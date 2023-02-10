@@ -8,20 +8,24 @@ namespace LibUpdater.Utils;
 public class Updater
 {
     private readonly IDownloader _downloader;
+    private readonly IRemover _remover;
     private readonly IUnpacker _unpacker;
 
     public Updater()
     {
         _downloader = new Downloader();
         _unpacker = new Unpacker();
+        _remover = new Remover();
     }
 
     public Updater(
         IDownloader downloader,
-        IUnpacker unpacker)
+        IUnpacker unpacker,
+        IRemover remover)
     {
         _downloader = downloader;
         _unpacker = unpacker;
+        _remover = remover;
     }
 
     public string GetLatestVersion(UpdateOptions options)
@@ -101,6 +105,11 @@ public class Updater
                 archiveItemSourcePath(archiveItem),
                 targetPath);
         }
+    }
+
+    public void CleanupObsoleteItems(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
+    {
+        foreach (var obsoleteItem in obsoleteItems) _remover.Remove(obsoleteItem.Path);
     }
 
     private static string CombineUrl(params string[] segments)
