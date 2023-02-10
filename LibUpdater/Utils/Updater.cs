@@ -8,10 +8,14 @@ namespace LibUpdater.Utils;
 public class Updater
 {
     private readonly IDownloader _downloader;
+    private readonly IUnpacker _unpacker;
 
-    public Updater(IDownloader downloader)
+    public Updater(
+        IDownloader downloader,
+        IUnpacker unpacker)
     {
         _downloader = downloader;
+        _unpacker = unpacker;
     }
 
     public string GetLatestVersion(UpdateOptions options)
@@ -67,18 +71,20 @@ public class Updater
     {
         string archiveItemSourcePath(IArchiveItem item)
         {
-            return Path.Combine(options.TempDir, item.Hash);
+            return Path.Combine(options.TempDir, item.Hash)
+                .AdjustDirSeparator();
         }
 
         string archiveItemTargetPath(IArchiveItem item)
         {
-            return Path.Combine(options.TargetDir, item.Path);
+            return Path.Combine(options.TargetDir, item.Path)
+                .AdjustDirSeparator();
         }
 
         foreach (var archiveItem in archiveItems)
-        {
-            //un7zip
-        }
+            _unpacker.Unpack(
+                archiveItemSourcePath(archiveItem),
+                archiveItemTargetPath(archiveItem));
     }
 
     private static string CombineUrl(params string[] segments)

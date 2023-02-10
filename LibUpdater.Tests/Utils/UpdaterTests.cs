@@ -14,7 +14,7 @@ internal class UpdaterTests
             .Returns("version1")
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object);
+        var updater = new Updater(downloaderMock.Object, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost:81";
@@ -36,7 +36,7 @@ internal class UpdaterTests
             .Returns(json)
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object);
+        var updater = new Updater(downloaderMock.Object, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost";
@@ -82,7 +82,7 @@ internal class UpdaterTests
         downloaderMock.Setup(mock => mock.DownloadFile(It.IsAny<string>(), It.IsAny<string>()))
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object);
+        var updater = new Updater(downloaderMock.Object, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost";
@@ -95,6 +95,48 @@ internal class UpdaterTests
             t.DownloadFile("https://localhost/version1/1234", Path.Combine(options.TempDir, "1234")));
         downloaderMock.Verify(t =>
             t.DownloadFile("https://localhost/version1/123456", Path.Combine(options.TempDir, "123456")));
+    }
+
+    [Test]
+    public void ApplyArchiveItemsShould()
+    {
+        IEnumerable<IArchiveItem> archiveItems = new[]
+        {
+            new Mock<IArchiveItem>()
+                .Do(x => x.SetupGet(y => y.Path).Returns("file1.txt"))
+                .Do(x => x.SetupGet(y => y.Hash).Returns("1234"))
+                .Do(x => x.SetupGet(y => y.Size).Returns(1234L))
+                .Object,
+            new Mock<IArchiveItem>()
+                .Do(x => x.SetupGet(y => y.Path).Returns("dir/file2.txt"))
+                .Do(x => x.SetupGet(y => y.Hash).Returns("123456"))
+                .Do(x => x.SetupGet(y => y.Size).Returns(123456L))
+                .Object
+        };
+
+        var unpackerMock = new Mock<IUnpacker>();
+        unpackerMock.Setup(mock => mock.Unpack(It.IsAny<string>(), It.IsAny<string>()))
+            .Verifiable();
+
+        var updater = new Updater(null, unpackerMock.Object);
+
+        var options = new UpdateOptions
+        {
+            UpdatesUri = "https://localhost",
+            TargetDir = @"C:\Target".AdjustDirSeparator(),
+            TempDir = @"C:\Temp".AdjustDirSeparator()
+        };
+
+        updater.ApplyArchiveItems(options, archiveItems);
+
+        unpackerMock.Verify(t =>
+            t.Unpack(
+                @"C:\Temp\1234".AdjustDirSeparator(),
+                @"C:\Target\file1.txt".AdjustDirSeparator()));
+        unpackerMock.Verify(t =>
+            t.Unpack(
+                @"C:\Temp\123456".AdjustDirSeparator(),
+                @"C:\Target\dir\file2.txt".AdjustDirSeparator()));
     }
 
     private static IEnumerable<string> TestJsonIndexResources()
