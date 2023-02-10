@@ -61,6 +61,26 @@ public class Updater
             .ForAll(item => _downloader.DownloadFile(archiveItemUri(item), archiveItemPath(item)));
     }
 
+    public void ApplyArchiveItems(
+        UpdateOptions options,
+        IEnumerable<IArchiveItem> archiveItems)
+    {
+        string archiveItemSourcePath(IArchiveItem item)
+        {
+            return Path.Combine(options.TempDir, item.Hash);
+        }
+
+        string archiveItemTargetPath(IArchiveItem item)
+        {
+            return Path.Combine(options.TargetDir, item.Path);
+        }
+
+        foreach (var archiveItem in archiveItems)
+        {
+            //un7zip
+        }
+    }
+
     private static string CombineUrl(params string[] segments)
     {
         return string.Join("/", segments.Select(x => x.TrimEnd('/')));

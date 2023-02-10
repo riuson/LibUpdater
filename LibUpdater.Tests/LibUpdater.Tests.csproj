@@ -8,6 +8,10 @@
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
+	<PropertyGroup Condition=" '$(OS)' == 'Windows_NT' ">
+		<DefineConstants>_WINDOWS</DefineConstants>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<ProjectReference Include="..\LibUpdater\LibUpdater.csproj" />
 	</ItemGroup>

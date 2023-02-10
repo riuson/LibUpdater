@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using LibUpdater.Data;
+using LibUpdater.Utils;
 
 namespace LibUpdater.Tests.Utils;
 
@@ -26,11 +26,7 @@ internal class ItemsEqualityComparer : IEqualityComparer<IFileItem>
         var pathX = Path.IsPathRooted(x.Path) ? x.Path : Path.Combine(targetDirectory, x.Path);
         var pathY = Path.IsPathRooted(y.Path) ? y.Path : Path.Combine(targetDirectory, y.Path);
 
-        // Normalize path separators.
-        var fileInfoX = new FileInfo(pathX);
-        var fileInfoY = new FileInfo(pathY);
-
-        return fileInfoX.FullName == fileInfoY.FullName;
+        return pathX.AdjustDirSeparator() == pathY.AdjustDirSeparator();
     }
 
     public int GetHashCode(IFileItem obj)
@@ -38,8 +34,7 @@ internal class ItemsEqualityComparer : IEqualityComparer<IFileItem>
         unchecked
         {
             var path = Path.IsPathRooted(obj.Path) ? obj.Path : Path.Combine(targetDirectory, obj.Path);
-            var fileInfo = new FileInfo(path);
-            path = fileInfo.FullName;
+            path = path.AdjustDirSeparator();
 
             var hashCode = path != null ? path.GetHashCode() : 0;
             hashCode = (hashCode * 397) ^ obj.Size.GetHashCode();
