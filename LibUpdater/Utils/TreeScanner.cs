@@ -52,7 +52,7 @@ public class TreeScanner
     public async Task<IEnumerable<IFileItem>> ScanTreeAsync(string path, int degreeOfParallelism = 1)
     {
         var directoryInfo = new DirectoryInfo(path);
-        var progressMap = new Dictionary<Guid, ProgressEventArgs>();
+        var progressMap = new ConcurrentDictionary<Guid, ProgressEventArgs>();
         var id = Guid.NewGuid();
 
         void hashProgress(object sender, ProgressEventArgs e)

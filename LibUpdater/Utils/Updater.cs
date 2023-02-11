@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -104,22 +105,42 @@ public class Updater
         string version,
         IEnumerable<IArchiveItem> archiveItems)
     {
-        string archiveItemUri(string hash)
+        var totalSize = archiveItems.Sum(x => x.ArchiveSize);
+        var progressMap = new ConcurrentDictionary<Guid, ProgressEventArgs>();
+        var id = Guid.NewGuid();
+
+        void progressHandler(object sender, ProgressEventArgs args)
         {
-            return CombineUrl(options.UpdatesUri, version, hash);
+            progressMap[args.Id] = args;
+            var currentSize = progressMap.Values.Sum(x => x.Current);
+            ReportProgress(currentSize, totalSize, id);
         }
 
-        string archiveItemPath(string hash)
+        try
         {
-            return Path.Combine(options.TempDir, hash);
-        }
+            _downloader.Progress += progressHandler;
 
-        archiveItems
-            .Select(x => x.Hash)
-            .Distinct()
-            .AsParallel()
-            .WithDegreeOfParallelism(options.DegreeOfParallelism)
-            .ForAll(hash => _downloader.DownloadFile(archiveItemUri(hash), archiveItemPath(hash)));
+            string archiveItemUri(string hash)
+            {
+                return CombineUrl(options.UpdatesUri, version, hash);
+            }
+
+            string archiveItemPath(string hash)
+            {
+                return Path.Combine(options.TempDir, hash);
+            }
+
+            archiveItems
+                .Select(x => x.Hash)
+                .Distinct()
+                .AsParallel()
+                .WithDegreeOfParallelism(options.DegreeOfParallelism)
+                .ForAll(hash => _downloader.DownloadFile(archiveItemUri(hash), archiveItemPath(hash)));
+        }
+        finally
+        {
+            _downloader.Progress -= progressHandler;
+        }
     }
 
     public async Task GetArchiveItemsAsync(
@@ -127,25 +148,45 @@ public class Updater
         string version,
         IEnumerable<IArchiveItem> archiveItems)
     {
-        string archiveItemUri(string hash)
+        var totalSize = archiveItems.Sum(x => x.ArchiveSize);
+        var progressMap = new ConcurrentDictionary<Guid, ProgressEventArgs>();
+        var id = Guid.NewGuid();
+
+        void progressHandler(object sender, ProgressEventArgs args)
         {
-            return CombineUrl(options.UpdatesUri, version, hash);
+            progressMap[args.Id] = args;
+            var currentSize = progressMap.Values.Sum(x => x.Current);
+            ReportProgress(currentSize, totalSize, id);
         }
 
-        string archiveItemPath(string hash)
+        try
         {
-            return Path.Combine(options.TempDir, hash);
+            _downloader.Progress += progressHandler;
+
+            string archiveItemUri(string hash)
+            {
+                return CombineUrl(options.UpdatesUri, version, hash);
+            }
+
+            string archiveItemPath(string hash)
+            {
+                return Path.Combine(options.TempDir, hash);
+            }
+
+            var uniqueHashes = archiveItems
+                .Select(x => x.Hash)
+                .Distinct();
+
+            await uniqueHashes.ForEachAsync(
+                options.DegreeOfParallelism,
+                hash => _downloader.DownloadFileAsync(
+                    archiveItemUri(hash),
+                    archiveItemPath(hash)));
         }
-
-        var uniqueHashes = archiveItems
-            .Select(x => x.Hash)
-            .Distinct();
-
-        await uniqueHashes.ForEachAsync(
-            options.DegreeOfParallelism,
-            hash => _downloader.DownloadFileAsync(
-                archiveItemUri(hash),
-                archiveItemPath(hash)));
+        finally
+        {
+            _downloader.Progress -= progressHandler;
+        }
     }
 
     public void ApplyArchiveItems(
