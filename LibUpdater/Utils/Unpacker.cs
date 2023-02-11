@@ -5,6 +5,9 @@ using SevenZipExtractor;
 
 namespace LibUpdater.Utils;
 
+// Progress reporting is not implemented yet.
+// See https://github.com/adoconnection/SevenZipExtractor/issues/55
+
 internal class Unpacker : IUnpacker
 {
     public void Unpack(Stream sourceStream, Stream targetStream)

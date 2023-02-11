@@ -106,7 +106,7 @@ public class Updater
         IEnumerable<IArchiveItem> archiveItems)
     {
         var totalSize = archiveItems.Sum(x => x.ArchiveSize);
-        var progressMap = new ConcurrentDictionary<Guid, ProgressEventArgs>();
+        var progressMap = new Dictionary<Guid, ProgressEventArgs>();
         var id = Guid.NewGuid();
 
         void progressHandler(object sender, ProgressEventArgs args)
@@ -193,6 +193,17 @@ public class Updater
         UpdateOptions options,
         IEnumerable<IArchiveItem> archiveItems)
     {
+        var totalSize = archiveItems.Sum(x => x.ArchiveSize);
+        var progressMap = new Dictionary<Guid, ProgressEventArgs>();
+        var id = Guid.NewGuid();
+
+        void progressHandler(object sender, ProgressEventArgs args)
+        {
+            progressMap[args.Id] = args;
+            var currentSize = progressMap.Values.Sum(x => x.Current);
+            ReportProgress(currentSize, totalSize, id);
+        }
+
         string archiveItemSourcePath(IArchiveItem item)
         {
             return Path.Combine(options.TempDir, item.Hash)
@@ -215,6 +226,14 @@ public class Updater
             _unpacker.Unpack(
                 archiveItemSourcePath(archiveItem),
                 targetPath);
+
+            // Simulate progress.
+            progressHandler(_unpacker, new ProgressEventArgs
+            {
+                Current = archiveItem.Size,
+                Total = archiveItem.Size,
+                Id = Guid.NewGuid()
+            });
         }
     }
 
@@ -222,6 +241,17 @@ public class Updater
         UpdateOptions options,
         IEnumerable<IArchiveItem> archiveItems)
     {
+        var totalSize = archiveItems.Sum(x => x.ArchiveSize);
+        var progressMap = new ConcurrentDictionary<Guid, ProgressEventArgs>();
+        var id = Guid.NewGuid();
+
+        void progressHandler(object sender, ProgressEventArgs args)
+        {
+            progressMap[args.Id] = args;
+            var currentSize = progressMap.Values.Sum(x => x.Current);
+            ReportProgress(currentSize, totalSize, id);
+        }
+
         string archiveItemSourcePath(IArchiveItem item)
         {
             return Path.Combine(options.TempDir, item.Hash)
@@ -244,6 +274,14 @@ public class Updater
             await _unpacker.UnpackAsync(
                 archiveItemSourcePath(archiveItem),
                 targetPath);
+
+            // Simulate progress.
+            progressHandler(_unpacker, new ProgressEventArgs
+            {
+                Current = archiveItem.Size,
+                Total = archiveItem.Size,
+                Id = Guid.NewGuid()
+            });
         }
     }
 
