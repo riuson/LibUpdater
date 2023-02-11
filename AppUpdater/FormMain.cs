@@ -51,15 +51,15 @@ public partial class FormMain : Form
         var scanner = new TreeScanner();
         var analyzer = new TreeAnalyzer();
 
-        var latestVersion = _updater.GetLatestVersion(options);
+        var latestVersion = _updater.GetActualVersion(options);
 
-        var archiveItems = _updater.GetIndex(options, latestVersion);
+        var archiveItems = _updater.GetIndex(options, latestVersion.Path);
 
         var localItems = scanner.ScanTree(options.TargetDir, options.DegreeOfParallelism);
 
         var analyzed = analyzer.Analyze(options.TargetDir, localItems, archiveItems);
 
-        _updater.GetArchiveItems(options, latestVersion, archiveItems);
+        _updater.GetArchiveItems(options, latestVersion.Path, archiveItems);
 
         _updater.CleanupObsoleteItems(options, analyzed.Obsolete);
 

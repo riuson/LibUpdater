@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -6,9 +7,9 @@ using LibUpdater.Data;
 
 namespace LibUpdater.Utils;
 
-internal class IndexDecoder
+internal class JsonDecoder
 {
-    public IEnumerable<IArchiveItem> Decode(string json)
+    public IEnumerable<IArchiveItem> DecodeIndex(string json)
     {
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
@@ -60,7 +61,7 @@ internal class IndexDecoder
         }
     }
 
-    public async Task<IEnumerable<IArchiveItem>> DecodeAsync(Stream jsonStream)
+    public async Task<IEnumerable<IArchiveItem>> DecodeIndexAsync(Stream jsonStream)
     {
         using var doc = await JsonDocument.ParseAsync(jsonStream);
         var root = doc.RootElement;
@@ -113,5 +114,75 @@ internal class IndexDecoder
         }
 
         return result;
+    }
+
+    public IActualVersionInfo DecodeVersion(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        var props = root.EnumerateObject();
+        var versionInfo = new ActualVersionInfo();
+
+        while (props.MoveNext())
+        {
+            var prop = props.Current;
+
+            switch (prop.Name)
+            {
+                case "version":
+                {
+                    versionInfo.Version = new Version(prop.Value.GetString() ?? "0.0.0.0");
+                    break;
+                }
+                case "path":
+                {
+                    versionInfo.Path = prop.Value.GetString();
+                    break;
+                }
+                case "description":
+                {
+                    versionInfo.Description = prop.Value.GetString();
+                    break;
+                }
+            }
+        }
+
+        return versionInfo;
+    }
+
+    public async Task<IActualVersionInfo> DecodeVersionAsync(Stream jsonStream)
+    {
+        using var doc = await JsonDocument.ParseAsync(jsonStream);
+        var root = doc.RootElement;
+
+        var props = root.EnumerateObject();
+        var versionInfo = new ActualVersionInfo();
+
+        while (props.MoveNext())
+        {
+            var prop = props.Current;
+
+            switch (prop.Name)
+            {
+                case "version":
+                {
+                    versionInfo.Version = new Version(prop.Value.GetString() ?? "0.0.0.0");
+                    break;
+                }
+                case "path":
+                {
+                    versionInfo.Path = prop.Value.GetString();
+                    break;
+                }
+                case "description":
+                {
+                    versionInfo.Description = prop.Value.GetString();
+                    break;
+                }
+            }
+        }
+
+        return versionInfo;
     }
 }

@@ -31,15 +31,16 @@ public class UpdaterAPI
         _remover = remover;
     }
 
-    public string GetLatestVersion(UpdateOptions options)
+    public IActualVersionInfo GetActualVersion(UpdateOptions options)
     {
         var versionUri = CombineUrl(options.UpdatesUri, options.VersionFile);
 
         try
         {
             _downloader.Progress += ProgressHandler;
-            var latestVersionString = _downloader.DownloadString(versionUri);
-            return latestVersionString.Trim();
+            var latestVersionJson = _downloader.DownloadString(versionUri);
+            var decoder = new JsonDecoder();
+            return decoder.DecodeVersion(latestVersionJson);
         }
         finally
         {
@@ -47,14 +48,15 @@ public class UpdaterAPI
         }
     }
 
-    public async Task<string> GetLatestVersionAsync(UpdateOptions options)
+    public async Task<IActualVersionInfo> GetActualVersionAsync(UpdateOptions options)
     {
         try
         {
             _downloader.Progress += ProgressHandler;
             var versionUri = CombineUrl(options.UpdatesUri, options.VersionFile);
-            var latestVersionString = await _downloader.DownloadStringAsync(versionUri);
-            return latestVersionString.Trim();
+            var latestVersionJson = await _downloader.DownloadStringAsync(versionUri);
+            var decoder = new JsonDecoder();
+            return decoder.DecodeVersion(latestVersionJson);
         }
         finally
         {
@@ -71,8 +73,8 @@ public class UpdaterAPI
             _downloader.Progress += ProgressHandler;
             var indexUri = CombineUrl(options.UpdatesUri, version, options.IndexFile);
             var indexJson = await _downloader.DownloadStringAsync(indexUri);
-            var decoder = new IndexDecoder();
-            var result = decoder.Decode(indexJson);
+            var decoder = new JsonDecoder();
+            var result = decoder.DecodeIndex(indexJson);
             return result;
         }
         finally
@@ -90,8 +92,8 @@ public class UpdaterAPI
             _downloader.Progress += ProgressHandler;
             var indexUri = CombineUrl(options.UpdatesUri, version, options.IndexFile);
             var indexJsonString = _downloader.DownloadString(indexUri);
-            var decoder = new IndexDecoder();
-            var result = decoder.Decode(indexJsonString);
+            var decoder = new JsonDecoder();
+            var result = decoder.DecodeIndex(indexJsonString);
             return result;
         }
         finally
