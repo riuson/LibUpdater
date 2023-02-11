@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -32,37 +33,70 @@ public class Updater
     public string GetLatestVersion(UpdateOptions options)
     {
         var versionUri = CombineUrl(options.UpdatesUri, options.VersionFile);
-        var latestVersionString = _downloader.DownloadString(versionUri);
-        return latestVersionString.Trim();
+
+        try
+        {
+            _downloader.Progress += ProgressHandler;
+            var latestVersionString = _downloader.DownloadString(versionUri);
+            return latestVersionString.Trim();
+        }
+        finally
+        {
+            _downloader.Progress -= ProgressHandler;
+        }
     }
 
     public async Task<string> GetLatestVersionAsync(UpdateOptions options)
     {
-        var versionUri = CombineUrl(options.UpdatesUri, options.VersionFile);
-        var latestVersionString = await _downloader.DownloadStringAsync(versionUri);
-        return latestVersionString.Trim();
+        try
+        {
+            _downloader.Progress += ProgressHandler;
+            var versionUri = CombineUrl(options.UpdatesUri, options.VersionFile);
+            var latestVersionString = await _downloader.DownloadStringAsync(versionUri);
+            return latestVersionString.Trim();
+        }
+        finally
+        {
+            _downloader.Progress -= ProgressHandler;
+        }
     }
 
     public async Task<IEnumerable<IArchiveItem>> GetIndexAsync(
         UpdateOptions options,
         string version)
     {
-        var indexUri = CombineUrl(options.UpdatesUri, version, options.IndexFile);
-        var indexJsonStream = await _downloader.OpenReadStreamAsync(indexUri);
-        var decoder = new IndexDecoder();
-        var result = await decoder.DecodeAsync(indexJsonStream);
-        return result;
+        try
+        {
+            _downloader.Progress += ProgressHandler;
+            var indexUri = CombineUrl(options.UpdatesUri, version, options.IndexFile);
+            var indexJson = await _downloader.DownloadStringAsync(indexUri);
+            var decoder = new IndexDecoder();
+            var result = decoder.Decode(indexJson);
+            return result;
+        }
+        finally
+        {
+            _downloader.Progress -= ProgressHandler;
+        }
     }
 
     public IEnumerable<IArchiveItem> GetIndex(
         UpdateOptions options,
         string version)
     {
-        var indexUri = CombineUrl(options.UpdatesUri, version, options.IndexFile);
-        var indexJsonString = _downloader.DownloadString(indexUri);
-        var decoder = new IndexDecoder();
-        var result = decoder.Decode(indexJsonString);
-        return result;
+        try
+        {
+            _downloader.Progress += ProgressHandler;
+            var indexUri = CombineUrl(options.UpdatesUri, version, options.IndexFile);
+            var indexJsonString = _downloader.DownloadString(indexUri);
+            var decoder = new IndexDecoder();
+            var result = decoder.Decode(indexJsonString);
+            return result;
+        }
+        finally
+        {
+            _downloader.Progress -= ProgressHandler;
+        }
     }
 
     public void GetArchiveItems(
@@ -190,8 +224,27 @@ public class Updater
         await _remover.RemoveEmptyDirsAsync(options.TargetDir);
     }
 
+    public event EventHandler<ProgressEventArgs> Progress;
+
     private static string CombineUrl(params string[] segments)
     {
         return string.Join("/", segments.Select(x => x.TrimEnd('/')));
+    }
+
+    private void ReportProgress(long current, long total, Guid id)
+    {
+        Progress?.Invoke(
+            this,
+            new ProgressEventArgs
+            {
+                Current = current,
+                Total = total,
+                Id = id
+            });
+    }
+
+    private void ProgressHandler(object sender, ProgressEventArgs args)
+    {
+        ReportProgress(args.Current, args.Total, args.Id);
     }
 }

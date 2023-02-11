@@ -65,12 +65,6 @@ internal class Downloader : IDownloader
         }
     }
 
-    public Task<Stream> OpenReadStreamAsync(string uri)
-    {
-        using var client = new WebClient();
-        return client.OpenReadTaskAsync(new Uri(uri));
-    }
-
     public void DownloadFile(string uri, string path, long size = -1)
     {
         using var client = new WebClient();

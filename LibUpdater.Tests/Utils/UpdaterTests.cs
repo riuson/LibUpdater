@@ -84,11 +84,11 @@ internal class UpdaterTests
     [TestCaseSource(nameof(TestJsonIndexResources))]
     public async Task GetIndexAsyncShould(string jsonIndexResource)
     {
-        var jsonStream = AssemblyExtension.GetEmbeddedResource(jsonIndexResource);
+        var json = AssemblyExtension.ReadResource(jsonIndexResource);
 
         var downloaderMock = new Mock<IDownloader>();
-        downloaderMock.Setup(mock => mock.OpenReadStreamAsync("https://localhost/version2/index_file.json"))
-            .Returns(Task.FromResult(jsonStream))
+        downloaderMock.Setup(mock => mock.DownloadStringAsync("https://localhost/version2/index_file.json"))
+            .Returns(Task.FromResult(json))
             .Verifiable();
 
         var updater = new Updater(downloaderMock.Object, null, null);
@@ -99,7 +99,7 @@ internal class UpdaterTests
 
         var archiveItems = await updater.GetIndexAsync(options, "version2");
 
-        downloaderMock.Verify(t => t.OpenReadStreamAsync("https://localhost/version2/index_file.json"));
+        downloaderMock.Verify(t => t.DownloadStringAsync("https://localhost/version2/index_file.json"));
 
         Assert.That(archiveItems.Count(), Is.EqualTo(4));
 
