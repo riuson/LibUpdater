@@ -1,4 +1,4 @@
-using LibUpdater.Tests.Utils;
+using LibUpdater;
 using LibUpdater.Utils;
 
 namespace AppUpdater;
@@ -37,9 +37,9 @@ public partial class FormMain : Form
         if (dialog.ShowDialog(this) == DialogResult.OK) textBoxTargetDir.Text = dialog.SelectedPath;
     }
 
-    private void buttonGo_Click(object sender, EventArgs e)
+    private async void buttonGo_Click(object sender, EventArgs e)
     {
-        if (!Directory.Exists(textBoxTargetDir.Text)) return;
+        buttonGo.Enabled = false;
 
         var options = new UpdateOptions
         {
@@ -48,22 +48,17 @@ public partial class FormMain : Form
             DegreeOfParallelism = 1,
             UpdatesUri = Convert.ToString(comboBoxUri.SelectedItem)
         };
-        var scanner = new TreeScanner();
-        var analyzer = new TreeAnalyzer();
 
-        var latestVersion = _updater.GetActualVersion(options);
+        var updater = new Updater();
 
-        var archiveItems = _updater.GetIndex(options, latestVersion.Path);
+        await updater.Update(
+            options,
+            _ => true,
+            _ => true,
+            _ => true,
+            _ => true);
 
-        var localItems = scanner.ScanTree(options.TargetDir, options.DegreeOfParallelism);
-
-        var analyzed = analyzer.Analyze(options.TargetDir, localItems, archiveItems);
-
-        _updater.GetArchiveItems(options, latestVersion.Path, archiveItems);
-
-        _updater.CleanupObsoleteItems(options, analyzed.Obsolete);
-
-        _updater.ApplyArchiveItems(options, archiveItems);
+        buttonGo.Enabled = true;
     }
 
     private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
