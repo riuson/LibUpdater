@@ -1,4 +1,5 @@
-﻿using LibUpdater;
+﻿using AppUpdater.UpdateUI;
+using LibUpdater;
 using LibUpdater.Analysis;
 using LibUpdater.Data;
 using LibUpdater.Utils;
@@ -42,53 +43,39 @@ public partial class FormMain : Form
     private async void buttonGo_Click(object sender, EventArgs e)
     {
         buttonGo.Enabled = false;
+        var token = new CancellationTokenSource();
 
         var options = new UpdateOptions
         {
             TempDir = _tempDir,
             TargetDir = textBoxTargetDir.Text,
             DegreeOfParallelism = 1,
-            UpdatesUri = Convert.ToString(comboBoxUri.SelectedItem)
+            UpdatesUri = Convert.ToString(comboBoxUri.SelectedItem),
+            Token = token.Token
         };
         var updater = new Updater();
 
-        var updateInitialPage = new TaskDialogPage
-        {
-            AllowCancel = true,
-            AllowMinimize = false,
-            Buttons = new TaskDialogButtonCollection { TaskDialogButton.Cancel },
-            Caption = "Обновление",
-            DefaultButton = TaskDialogButton.Cancel,
-            Heading = "Производится запрос на сервер обновлений...",
-            Icon = TaskDialogIcon.Information,
-            ProgressBar = new TaskDialogProgressBar(TaskDialogProgressBarState.Marquee)
-        };
+        var updateInitialPage = new InitialPage();
 
-        var currentPage = updateInitialPage;
+        TaskDialogPage currentPage = updateInitialPage;
 
         async Task<bool> confirmVersion(IActualVersionInfo versionInfo)
         {
-            var buttonContinue = new TaskDialogButton("Продолжить", true, false);
-            var buttonCancel = new TaskDialogButton("Отменить");
-            var updateConfirmVersionPage = new TaskDialogPage
-            {
-                AllowCancel = true,
-                AllowMinimize = false,
-                Buttons = new TaskDialogButtonCollection { buttonContinue, buttonCancel },
-                Caption = "Обновление",
-                DefaultButton = buttonContinue,
-                Heading = $"Доступна версия {versionInfo.Version}\n{versionInfo.Description}",
-                Icon = TaskDialogIcon.Information
-            };
-
             var confirm = false;
             var semaphoreConfirm = new SemaphoreSlim(0, 1);
-            buttonContinue.Click += (o, args) =>
-            {
-                confirm = true;
-                semaphoreConfirm.Release();
-            };
-            buttonCancel.Click += (o, args) => { semaphoreConfirm.Release(); };
+            var updateConfirmVersionPage = new ConfirmVersionPage(
+                versionInfo,
+                (o, args) =>
+                {
+                    confirm = true;
+                    semaphoreConfirm.Release();
+                },
+                (o, args) =>
+                {
+                    token.Cancel();
+                    semaphoreConfirm.Release();
+                });
+
 
 #if DEBUG
             // To illustrate the process.
@@ -100,17 +87,7 @@ public partial class FormMain : Form
 
             await semaphoreConfirm.WaitAsync();
 
-            var updateRequestingIndexPage = new TaskDialogPage
-            {
-                AllowCancel = true,
-                AllowMinimize = false,
-                Buttons = new TaskDialogButtonCollection { TaskDialogButton.Cancel },
-                Caption = "Обновление",
-                DefaultButton = TaskDialogButton.Cancel,
-                Heading = "Производится запрос на сервер обновлений...",
-                Icon = TaskDialogIcon.Information,
-                ProgressBar = new TaskDialogProgressBar(TaskDialogProgressBarState.Marquee)
-            };
+            var updateRequestingIndexPage = new RequestingIndexPage();
 
             currentPage.Navigate(updateRequestingIndexPage);
             currentPage = updateRequestingIndexPage;
@@ -125,27 +102,20 @@ public partial class FormMain : Form
 
         async Task<bool> confirmIndex(IEnumerable<IArchiveItem> archiveItems)
         {
-            var buttonContinue = new TaskDialogButton("Продолжить", true, false);
-            var buttonCancel = new TaskDialogButton("Отменить");
-            var updateConfirmIndexPage = new TaskDialogPage
-            {
-                AllowCancel = true,
-                AllowMinimize = false,
-                Buttons = new TaskDialogButtonCollection { buttonContinue, buttonCancel },
-                Caption = "Обновление",
-                DefaultButton = buttonContinue,
-                Heading = "Получен перечень файлов с сервера.\nТребуется сравнить с локальными файлами.",
-                Icon = TaskDialogIcon.Information
-            };
-
             var confirm = false;
             var semaphoreConfirm = new SemaphoreSlim(0, 1);
-            buttonContinue.Click += (o, args) =>
-            {
-                confirm = true;
-                semaphoreConfirm.Release();
-            };
-            buttonCancel.Click += (o, args) => { semaphoreConfirm.Release(); };
+            var updateConfirmIndexPage = new ConfirmIndexPage(
+                (o, args) =>
+                {
+                    confirm = true;
+                    semaphoreConfirm.Release();
+                },
+                (o, args) =>
+                {
+                    token.Cancel();
+                    semaphoreConfirm.Release();
+                }
+            );
             currentPage.Navigate(updateConfirmIndexPage);
             currentPage = updateConfirmIndexPage;
             await semaphoreConfirm.WaitAsync();
@@ -155,87 +125,26 @@ public partial class FormMain : Form
 
         async Task<bool> confirmAnalysis(IAnalysisResult analysisResult)
         {
-            var buttonContinue = new TaskDialogButton("Продолжить", true, false);
-            var buttonCancel = new TaskDialogButton("Отменить");
-            var updateConfirmAnalysisPage = new TaskDialogPage
-            {
-                AllowCancel = true,
-                AllowMinimize = false,
-                Buttons = new TaskDialogButtonCollection { buttonContinue, buttonCancel },
-                Caption = "Обновление",
-                DefaultButton = buttonContinue,
-                Expander = new TaskDialogExpander
-                {
-                    CollapsedButtonText = "Подробная информация",
-                    ExpandedButtonText = "Скрыть",
-                    Expanded = false,
-                    Position = TaskDialogExpanderPosition.AfterText,
-                    Text = string.Format(
-                        "Новых файлов: {0}\n" +
-                        "Устаревших файлов: {1}\n" +
-                        "К загрузке: {2:n0} байт\n" +
-                        "К распаковке: {3:n0} байт\n" +
-                        "К удалению: {4:n0} байт\n" +
-                        "Баланс: {5:n0} байт\n",
-                        analysisResult.FilesToAddCount,
-                        analysisResult.FilesToRemoveCount,
-                        analysisResult.BytesToDownload,
-                        analysisResult.BytesToAdd,
-                        analysisResult.BytesToRemove,
-                        analysisResult.BytesChanged)
-                },
-                Heading = $"Потребуется загрузить {analysisResult.BytesToDownload:n0} байт.",
-                Icon = TaskDialogIcon.Information
-            };
-
             var confirm = false;
             var semaphoreConfirm = new SemaphoreSlim(0, 1);
-            buttonContinue.Click += (o, args) =>
-            {
-                confirm = true;
-                semaphoreConfirm.Release();
-            };
-            buttonCancel.Click += (o, args) => { semaphoreConfirm.Release(); };
+            var updateConfirmAnalysisPage = new ConfirmAnalysisPage(
+                analysisResult,
+                (o, args) =>
+                {
+                    confirm = true;
+                    semaphoreConfirm.Release();
+                },
+                (o, args) =>
+                {
+                    token.Cancel();
+                    semaphoreConfirm.Release();
+                });
             currentPage.Navigate(updateConfirmAnalysisPage);
             currentPage = updateConfirmAnalysisPage;
             await semaphoreConfirm.WaitAsync();
 
-            var updateDownloadingArchivesPage = new TaskDialogPage
-            {
-                AllowCancel = true,
-                AllowMinimize = false,
-                Buttons = new TaskDialogButtonCollection { TaskDialogButton.Cancel },
-                Caption = "Обновление",
-                DefaultButton = TaskDialogButton.Cancel,
-                Heading = "Производится загрузка обновлений...",
-                Icon = TaskDialogIcon.Information,
-                ProgressBar = new TaskDialogProgressBar
-                {
-                    Minimum = 0,
-                    Maximum = 100,
-                    Value = 0,
-                    State = TaskDialogProgressBarState.Normal
-                }
-            };
-
-            var noMoreUpdates = false;
-
-            IProgress<ProgressEventArgs> progress = new Progress<ProgressEventArgs>(args =>
-            {
-                try
-                {
-                    if (!noMoreUpdates)
-                    {
-                        updateDownloadingArchivesPage.ProgressBar.Value = args.Percentage;
-                        updateDownloadingArchivesPage.Text = $"{args.Current:n0} / {args.Total:n0}";
-                    }
-                }
-                catch
-                {
-                    noMoreUpdates = true;
-                }
-            });
-            updater.Progress += (o, args) => progress.Report(args);
+            var updateDownloadingArchivesPage = new DownloadingArchivesPage();
+            updater.Progress += updateDownloadingArchivesPage.ProgressHandler;
 
             currentPage.Navigate(updateDownloadingArchivesPage);
             currentPage = updateDownloadingArchivesPage;
@@ -245,68 +154,26 @@ public partial class FormMain : Form
 
         async Task<bool> confirmApply(IAnalysisResult analysisResult)
         {
-            var buttonContinue = new TaskDialogButton("Продолжить", true, false);
-            var buttonCancel = new TaskDialogButton("Отменить");
-            var updateConfirmAnalysisPage = new TaskDialogPage
-            {
-                AllowCancel = true,
-                AllowMinimize = false,
-                Buttons = new TaskDialogButtonCollection { buttonContinue, buttonCancel },
-                Caption = "Обновление",
-                DefaultButton = buttonContinue,
-                Heading = "Далее будет произведена установка обновления.\nОтменить процесс будет невозможно.",
-                Icon = TaskDialogIcon.Warning
-            };
-
             var confirm = false;
             var semaphoreConfirm = new SemaphoreSlim(0, 1);
-            buttonContinue.Click += (o, args) =>
-            {
-                confirm = true;
-                semaphoreConfirm.Release();
-            };
-            buttonCancel.Click += (o, args) => { semaphoreConfirm.Release(); };
-            currentPage.Navigate(updateConfirmAnalysisPage);
-            currentPage = updateConfirmAnalysisPage;
+            var confirmInstallPage = new ConfirmInstallPage(
+                (o, args) =>
+                {
+                    confirm = true;
+                    semaphoreConfirm.Release();
+                },
+                (o, args) =>
+                {
+                    token.Cancel();
+                    semaphoreConfirm.Release();
+                });
+            currentPage.Navigate(confirmInstallPage);
+            currentPage = confirmInstallPage;
             await semaphoreConfirm.WaitAsync();
 
 
-            var updateApplyChangesPage = new TaskDialogPage
-            {
-                AllowCancel = true,
-                AllowMinimize = false,
-                Buttons = new TaskDialogButtonCollection { TaskDialogButton.Cancel },
-                Caption = "Обновление",
-                DefaultButton = TaskDialogButton.Cancel,
-                Heading = "Производится установка обновлений...",
-                Icon = TaskDialogIcon.Information,
-                ProgressBar = new TaskDialogProgressBar
-                {
-                    Minimum = 0,
-                    Maximum = 100,
-                    Value = 0,
-                    State = TaskDialogProgressBarState.Normal
-                }
-            };
-
-            var noMoreUpdates = false;
-
-            IProgress<ProgressEventArgs> progress = new Progress<ProgressEventArgs>(args =>
-            {
-                try
-                {
-                    if (!noMoreUpdates)
-                    {
-                        updateApplyChangesPage.ProgressBar.Value = args.Percentage;
-                        updateApplyChangesPage.Text = $"{args.Current:n0} / {args.Total:n0}";
-                    }
-                }
-                catch
-                {
-                    noMoreUpdates = true;
-                }
-            });
-            updater.Progress += (o, args) => progress.Report(args);
+            var updateApplyChangesPage = new ApplyChangesPage();
+            updater.Progress += updateApplyChangesPage.ProgressHandler;
 
             currentPage.Navigate(updateApplyChangesPage);
             currentPage = updateApplyChangesPage;
@@ -317,16 +184,7 @@ public partial class FormMain : Form
 
         async Task confirmComplete()
         {
-            var updateCompletePage = new TaskDialogPage
-            {
-                AllowCancel = true,
-                AllowMinimize = false,
-                Buttons = new TaskDialogButtonCollection { TaskDialogButton.OK },
-                Caption = "Обновление",
-                DefaultButton = TaskDialogButton.OK,
-                Heading = "Установка обновлений завершена.",
-                Icon = TaskDialogIcon.Information
-            };
+            var updateCompletePage = new CompletedPage();
 
             currentPage.Navigate(updateCompletePage);
             currentPage = updateCompletePage;
