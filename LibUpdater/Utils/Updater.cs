@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using LibUpdater.Data;
 
 namespace LibUpdater.Utils;
@@ -31,12 +32,26 @@ public class Updater
     public string GetLatestVersion(UpdateOptions options)
     {
         var versionUri = CombineUrl(options.UpdatesUri, options.VersionFile);
+        var latestVersionString = _downloader.DownloadString(versionUri);
+        return latestVersionString.Trim();
+    }
 
-        var latestVersionString = _downloader
-            .DownloadString(versionUri)
-            .Trim();
+    public async Task<string> GetLatestVersionAsync(UpdateOptions options)
+    {
+        var versionUri = CombineUrl(options.UpdatesUri, options.VersionFile);
+        var latestVersionString = await _downloader.DownloadStringAsync(versionUri);
+        return latestVersionString.Trim();
+    }
 
-        return latestVersionString;
+    public async Task<IEnumerable<IArchiveItem>> GetIndexAsync(
+        UpdateOptions options,
+        string version)
+    {
+        var indexUri = CombineUrl(options.UpdatesUri, version, options.IndexFile);
+        var indexJsonStream = await _downloader.OpenReadStreamAsync(indexUri);
+        var decoder = new IndexDecoder();
+        var result = await decoder.DecodeAsync(indexJsonStream);
+        return result;
     }
 
     public IEnumerable<IArchiveItem> GetIndex(
@@ -44,14 +59,9 @@ public class Updater
         string version)
     {
         var indexUri = CombineUrl(options.UpdatesUri, version, options.IndexFile);
-
-        var indexJsonString = _downloader
-            .DownloadString(indexUri)
-            .Trim();
-
+        var indexJsonString = _downloader.DownloadString(indexUri);
         var decoder = new IndexDecoder();
         var result = decoder.Decode(indexJsonString);
-
         return result;
     }
 
@@ -76,6 +86,14 @@ public class Updater
             .AsParallel()
             .WithDegreeOfParallelism(options.DegreeOfParallelism)
             .ForAll(hash => _downloader.DownloadFile(archiveItemUri(hash), archiveItemPath(hash)));
+    }
+
+    public Task GetArchiveItemsAsync(
+        UpdateOptions options,
+        string version,
+        IEnumerable<IArchiveItem> archiveItems)
+    {
+        return Task.Run(() => GetArchiveItems(options, version, archiveItems));
     }
 
     public void ApplyArchiveItems(
@@ -105,6 +123,46 @@ public class Updater
                 archiveItemSourcePath(archiveItem),
                 targetPath);
         }
+    }
+
+    public async Task ApplyArchiveItemsAsync(
+        UpdateOptions options,
+        IEnumerable<IArchiveItem> archiveItems)
+    {
+        string archiveItemSourcePath(IArchiveItem item)
+        {
+            return Path.Combine(options.TempDir, item.Hash)
+                .AdjustDirSeparator();
+        }
+
+        string archiveItemTargetPath(IArchiveItem item)
+        {
+            return Path.Combine(options.TargetDir, item.Path)
+                .AdjustDirSeparator();
+        }
+
+        foreach (var archiveItem in archiveItems)
+        {
+            var targetPath = archiveItemTargetPath(archiveItem);
+            var targetDir = Path.GetDirectoryName(targetPath);
+
+            if (!Directory.Exists(targetDir)) Directory.CreateDirectory(targetDir);
+
+            await _unpacker.UnpackAsync(
+                archiveItemSourcePath(archiveItem),
+                targetPath);
+        }
+    }
+
+    public async Task CleanupObsoleteItemsAsync(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
+    {
+        string obsoleteItemTargetPath(IFileItem item)
+        {
+            return Path.Combine(options.TargetDir, item.Path)
+                .AdjustDirSeparator();
+        }
+
+        foreach (var obsoleteItem in obsoleteItems) await _remover.RemoveAsync(obsoleteItemTargetPath(obsoleteItem));
     }
 
     public void CleanupObsoleteItems(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
