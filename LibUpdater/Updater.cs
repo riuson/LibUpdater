@@ -14,9 +14,11 @@ public class Updater
         Func<IActualVersionInfo, Task<bool>> confirmVersion,
         Func<IEnumerable<IArchiveItem>, Task<bool>> confirmIndex,
         Func<IAnalysisResult, Task<bool>> confirmAnalysis,
-        Func<IAnalysisResult, Task<bool>> confirmApply)
+        Func<IAnalysisResult, Task<bool>> confirmApply,
+        Func<Task> confirmComplete)
     {
         var api = new UpdaterAPI();
+        api.Progress += OnProgress;
 
         var versionInfo = await api.GetActualVersionAsync(options);
 
@@ -44,5 +46,16 @@ public class Updater
         await api.CleanupObsoleteItemsAsync(options, analysisResult.Obsolete);
 
         await api.ApplyArchiveItemsAsync(options, analysisResult.Added);
+
+        await confirmComplete();
+
+        api.Progress -= OnProgress;
+    }
+
+    public event EventHandler<ProgressEventArgs> Progress;
+
+    private void OnProgress(object sender, ProgressEventArgs e)
+    {
+        Progress?.Invoke(this, e);
     }
 }

@@ -89,9 +89,37 @@ public partial class FormMain : Form
                 semaphoreConfirm.Release();
             };
             buttonCancel.Click += (o, args) => { semaphoreConfirm.Release(); };
+
+#if DEBUG
+            // To illustrate the process.
+            await Task.Delay(2000);
+#endif
+
             currentPage.Navigate(updateConfirmVersionPage);
             currentPage = updateConfirmVersionPage;
+
             await semaphoreConfirm.WaitAsync();
+
+            var updateRequestingIndexPage = new TaskDialogPage
+            {
+                AllowCancel = true,
+                AllowMinimize = false,
+                Buttons = new TaskDialogButtonCollection { TaskDialogButton.Cancel },
+                Caption = "Обновление",
+                DefaultButton = TaskDialogButton.Cancel,
+                Heading = "Производится запрос на сервер обновлений...",
+                Icon = TaskDialogIcon.Information,
+                ProgressBar = new TaskDialogProgressBar(TaskDialogProgressBarState.Marquee)
+            };
+
+            currentPage.Navigate(updateRequestingIndexPage);
+            currentPage = updateRequestingIndexPage;
+
+#if DEBUG
+            // To illustrate the process.
+            await Task.Delay(2000);
+#endif
+
             return confirm;
         }
 
@@ -121,6 +149,7 @@ public partial class FormMain : Form
             currentPage.Navigate(updateConfirmIndexPage);
             currentPage = updateConfirmIndexPage;
             await semaphoreConfirm.WaitAsync();
+
             return confirm;
         }
 
@@ -170,6 +199,47 @@ public partial class FormMain : Form
             currentPage.Navigate(updateConfirmAnalysisPage);
             currentPage = updateConfirmAnalysisPage;
             await semaphoreConfirm.WaitAsync();
+
+            var updateDownloadingArchivesPage = new TaskDialogPage
+            {
+                AllowCancel = true,
+                AllowMinimize = false,
+                Buttons = new TaskDialogButtonCollection { TaskDialogButton.Cancel },
+                Caption = "Обновление",
+                DefaultButton = TaskDialogButton.Cancel,
+                Heading = "Производится загрузка обновлений...",
+                Icon = TaskDialogIcon.Information,
+                ProgressBar = new TaskDialogProgressBar
+                {
+                    Minimum = 0,
+                    Maximum = 100,
+                    Value = 0,
+                    State = TaskDialogProgressBarState.Normal
+                }
+            };
+
+            var noMoreUpdates = false;
+
+            IProgress<ProgressEventArgs> progress = new Progress<ProgressEventArgs>(args =>
+            {
+                try
+                {
+                    if (!noMoreUpdates)
+                    {
+                        updateDownloadingArchivesPage.ProgressBar.Value = args.Percentage;
+                        updateDownloadingArchivesPage.Text = $"{args.Current:n0} / {args.Total:n0}";
+                    }
+                }
+                catch
+                {
+                    noMoreUpdates = true;
+                }
+            });
+            updater.Progress += (o, args) => progress.Report(args);
+
+            currentPage.Navigate(updateDownloadingArchivesPage);
+            currentPage = updateDownloadingArchivesPage;
+
             return confirm;
         }
 
@@ -184,8 +254,8 @@ public partial class FormMain : Form
                 Buttons = new TaskDialogButtonCollection { buttonContinue, buttonCancel },
                 Caption = "Обновление",
                 DefaultButton = buttonContinue,
-                Heading = "Далее будет произведена установка обновления. Отменить процесс будет невозможно.",
-                Icon = TaskDialogIcon.Information
+                Heading = "Далее будет произведена установка обновления.\nОтменить процесс будет невозможно.",
+                Icon = TaskDialogIcon.Warning
             };
 
             var confirm = false;
@@ -199,7 +269,69 @@ public partial class FormMain : Form
             currentPage.Navigate(updateConfirmAnalysisPage);
             currentPage = updateConfirmAnalysisPage;
             await semaphoreConfirm.WaitAsync();
+
+
+            var updateApplyChangesPage = new TaskDialogPage
+            {
+                AllowCancel = true,
+                AllowMinimize = false,
+                Buttons = new TaskDialogButtonCollection { TaskDialogButton.Cancel },
+                Caption = "Обновление",
+                DefaultButton = TaskDialogButton.Cancel,
+                Heading = "Производится установка обновлений...",
+                Icon = TaskDialogIcon.Information,
+                ProgressBar = new TaskDialogProgressBar
+                {
+                    Minimum = 0,
+                    Maximum = 100,
+                    Value = 0,
+                    State = TaskDialogProgressBarState.Normal
+                }
+            };
+
+            var noMoreUpdates = false;
+
+            IProgress<ProgressEventArgs> progress = new Progress<ProgressEventArgs>(args =>
+            {
+                try
+                {
+                    if (!noMoreUpdates)
+                    {
+                        updateApplyChangesPage.ProgressBar.Value = args.Percentage;
+                        updateApplyChangesPage.Text = $"{args.Current:n0} / {args.Total:n0}";
+                    }
+                }
+                catch
+                {
+                    noMoreUpdates = true;
+                }
+            });
+            updater.Progress += (o, args) => progress.Report(args);
+
+            currentPage.Navigate(updateApplyChangesPage);
+            currentPage = updateApplyChangesPage;
+
+
             return confirm;
+        }
+
+        async Task confirmComplete()
+        {
+            var updateCompletePage = new TaskDialogPage
+            {
+                AllowCancel = true,
+                AllowMinimize = false,
+                Buttons = new TaskDialogButtonCollection { TaskDialogButton.OK },
+                Caption = "Обновление",
+                DefaultButton = TaskDialogButton.OK,
+                Heading = "Установка обновлений завершена.",
+                Icon = TaskDialogIcon.Information
+            };
+
+            currentPage.Navigate(updateCompletePage);
+            currentPage = updateCompletePage;
+
+            await Task.Delay(1);
         }
 
         var taskUpdate = updater.Update(
@@ -207,9 +339,12 @@ public partial class FormMain : Form
             confirmVersion,
             confirmIndex,
             confirmAnalysis,
-            confirmApply);
+            confirmApply,
+            confirmComplete);
 
         TaskDialog.ShowDialog(this, updateInitialPage);
+
+        await taskUpdate;
 
         buttonGo.Enabled = true;
     }
