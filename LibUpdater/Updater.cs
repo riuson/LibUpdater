@@ -11,20 +11,20 @@ public class Updater
 {
     public async Task Update(
         UpdateOptions options,
-        Func<IActualVersionInfo, bool> confirmVersion,
-        Func<IEnumerable<IArchiveItem>, bool> confirmIndex,
-        Func<IAnalyzeResult, bool> confirmAnalyzed,
-        Func<IAnalyzeResult, bool> confirmApply)
+        Func<IActualVersionInfo, Task<bool>> confirmVersion,
+        Func<IEnumerable<IArchiveItem>, Task<bool>> confirmIndex,
+        Func<IAnalyzeResult, Task<bool>> confirmAnalyzed,
+        Func<IAnalyzeResult, Task<bool>> confirmApply)
     {
         var api = new UpdaterAPI();
 
         var versionInfo = await api.GetActualVersionAsync(options);
 
-        if (!confirmVersion(versionInfo)) return;
+        if (!await confirmVersion(versionInfo)) return;
 
         var indexItems = await api.GetIndexAsync(options, versionInfo.Path);
 
-        if (!confirmIndex(indexItems)) return;
+        if (!await confirmIndex(indexItems)) return;
 
         var scanner = new TreeScanner();
         var localItems = await scanner.ScanTreeAsync(options.TargetDir, options.DegreeOfParallelism);
@@ -35,11 +35,11 @@ public class Updater
             localItems,
             indexItems);
 
-        if (!confirmAnalyzed(analyzed)) return;
+        if (!await confirmAnalyzed(analyzed)) return;
 
         await api.GetArchiveItemsAsync(options, versionInfo.Path, analyzed.Added);
 
-        if (!confirmApply(analyzed)) return;
+        if (!await confirmApply(analyzed)) return;
 
         await api.CleanupObsoleteItemsAsync(options, analyzed.Obsolete);
 
