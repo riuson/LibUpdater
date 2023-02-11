@@ -14,9 +14,18 @@ internal class PathNormalizerTests
 #else
     [Ignore("Not implemented.")]
 #endif
-    public void AdjustShould(string source, string expected)
+    public void AdjustSeparatorShould(string source, string expected)
     {
-        var actual = source.AdjustDirSeparator();
+        var actual = source.AdjustSeparator();
+
+        Assert.That(expected, Is.EqualTo(actual));
+    }
+
+    [TestCase(@"C:\Temp\file.txt", @"C:\Users", @"C:\Temp\file.txt")]
+    [TestCase(@"file.txt", @"C:\Users", @"C:\Users\file.txt")]
+    public void AdjustParentShould(string value, string parent, string expected)
+    {
+        var actual = value.AdjustParent(parent);
 
         Assert.That(expected, Is.EqualTo(actual));
     }

@@ -270,20 +270,20 @@ internal class UpdaterTests
         var options = new UpdateOptions
         {
             UpdatesUri = "https://localhost",
-            TargetDir = @"C:\Target".AdjustDirSeparator(),
-            TempDir = @"C:\Temp".AdjustDirSeparator()
+            TargetDir = @"C:\Target".AdjustSeparator(),
+            TempDir = @"C:\Temp".AdjustSeparator()
         };
 
         updater.ApplyArchiveItems(options, archiveItems);
 
         unpackerMock.Verify(t =>
             t.Unpack(
-                @"C:\Temp\1234".AdjustDirSeparator(),
-                @"C:\Target\file1.txt".AdjustDirSeparator()));
+                @"C:\Temp\1234".AdjustSeparator(),
+                @"C:\Target\file1.txt".AdjustSeparator()));
         unpackerMock.Verify(t =>
             t.Unpack(
-                @"C:\Temp\123456".AdjustDirSeparator(),
-                @"C:\Target\dir\file2.txt".AdjustDirSeparator()));
+                @"C:\Temp\123456".AdjustSeparator(),
+                @"C:\Target\dir\file2.txt".AdjustSeparator()));
     }
 
     [Test]
@@ -312,20 +312,20 @@ internal class UpdaterTests
         var options = new UpdateOptions
         {
             UpdatesUri = "https://localhost",
-            TargetDir = @"C:\Target".AdjustDirSeparator(),
-            TempDir = @"C:\Temp".AdjustDirSeparator()
+            TargetDir = @"C:\Target".AdjustSeparator(),
+            TempDir = @"C:\Temp".AdjustSeparator()
         };
 
         await updater.ApplyArchiveItemsAsync(options, archiveItems);
 
         unpackerMock.Verify(t =>
             t.UnpackAsync(
-                @"C:\Temp\1234".AdjustDirSeparator(),
-                @"C:\Target\file1.txt".AdjustDirSeparator()));
+                @"C:\Temp\1234".AdjustSeparator(),
+                @"C:\Target\file1.txt".AdjustSeparator()));
         unpackerMock.Verify(t =>
             t.UnpackAsync(
-                @"C:\Temp\123456".AdjustDirSeparator(),
-                @"C:\Target\dir\file2.txt".AdjustDirSeparator()));
+                @"C:\Temp\123456".AdjustSeparator(),
+                @"C:\Target\dir\file2.txt".AdjustSeparator()));
     }
 
     [Test]
@@ -352,14 +352,14 @@ internal class UpdaterTests
         var updater = new Updater(null, null, removerMock.Object);
 
         var options = new UpdateOptions();
-        options.TargetDir = @"C:\Windows\Temp".AdjustDirSeparator();
+        options.TargetDir = @"C:\Windows\Temp".AdjustSeparator();
 
         updater.CleanupObsoleteItems(options, obsoleteItems);
 
         removerMock.Verify(t =>
-            t.Remove(@"C:\Windows\Temp\file1.txt".AdjustDirSeparator()));
+            t.Remove(@"C:\Windows\Temp\file1.txt".AdjustSeparator()));
         removerMock.Verify(t =>
-            t.Remove(@"C:\Windows\Temp\dir\file2.txt".AdjustDirSeparator()));
+            t.Remove(@"C:\Windows\Temp\dir\file2.txt".AdjustSeparator()));
     }
 
     [Test]
@@ -386,14 +386,14 @@ internal class UpdaterTests
         var updater = new Updater(null, null, removerMock.Object);
 
         var options = new UpdateOptions();
-        options.TargetDir = @"C:\Windows\Temp".AdjustDirSeparator();
+        options.TargetDir = @"C:\Windows\Temp".AdjustSeparator();
 
         await updater.CleanupObsoleteItemsAsync(options, obsoleteItems);
 
         removerMock.Verify(t =>
-            t.RemoveAsync(@"C:\Windows\Temp\file1.txt".AdjustDirSeparator()));
+            t.RemoveAsync(@"C:\Windows\Temp\file1.txt".AdjustSeparator()));
         removerMock.Verify(t =>
-            t.RemoveAsync(@"C:\Windows\Temp\dir\file2.txt".AdjustDirSeparator()));
+            t.RemoveAsync(@"C:\Windows\Temp\dir\file2.txt".AdjustSeparator()));
     }
 
     private static IEnumerable<string> TestJsonIndexResources()

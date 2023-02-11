@@ -26,7 +26,7 @@ internal class ItemsEqualityComparer : IEqualityComparer<IFileItem>
         var pathX = Path.IsPathRooted(x.Path) ? x.Path : Path.Combine(targetDirectory, x.Path);
         var pathY = Path.IsPathRooted(y.Path) ? y.Path : Path.Combine(targetDirectory, y.Path);
 
-        return pathX.AdjustDirSeparator() == pathY.AdjustDirSeparator();
+        return pathX.AdjustSeparator() == pathY.AdjustSeparator();
     }
 
     public int GetHashCode(IFileItem obj)
@@ -34,7 +34,7 @@ internal class ItemsEqualityComparer : IEqualityComparer<IFileItem>
         unchecked
         {
             var path = Path.IsPathRooted(obj.Path) ? obj.Path : Path.Combine(targetDirectory, obj.Path);
-            path = path.AdjustDirSeparator();
+            path = path.AdjustSeparator();
 
             var hashCode = path != null ? path.GetHashCode() : 0;
             hashCode = (hashCode * 397) ^ obj.Size.GetHashCode();

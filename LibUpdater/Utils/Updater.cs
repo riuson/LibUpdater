@@ -103,13 +103,13 @@ public class Updater
         string archiveItemSourcePath(IArchiveItem item)
         {
             return Path.Combine(options.TempDir, item.Hash)
-                .AdjustDirSeparator();
+                .AdjustSeparator();
         }
 
         string archiveItemTargetPath(IArchiveItem item)
         {
             return Path.Combine(options.TargetDir, item.Path)
-                .AdjustDirSeparator();
+                .AdjustSeparator();
         }
 
         foreach (var archiveItem in archiveItems)
@@ -132,13 +132,13 @@ public class Updater
         string archiveItemSourcePath(IArchiveItem item)
         {
             return Path.Combine(options.TempDir, item.Hash)
-                .AdjustDirSeparator();
+                .AdjustSeparator();
         }
 
         string archiveItemTargetPath(IArchiveItem item)
         {
             return Path.Combine(options.TargetDir, item.Path)
-                .AdjustDirSeparator();
+                .AdjustSeparator();
         }
 
         foreach (var archiveItem in archiveItems)
@@ -156,13 +156,9 @@ public class Updater
 
     public async Task CleanupObsoleteItemsAsync(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
     {
-        string obsoleteItemTargetPath(IFileItem item)
-        {
-            return Path.Combine(options.TargetDir, item.Path)
-                .AdjustDirSeparator();
-        }
-
-        foreach (var obsoleteItem in obsoleteItems) await _remover.RemoveAsync(obsoleteItemTargetPath(obsoleteItem));
+        foreach (var obsoleteItem in obsoleteItems)
+            await _remover.RemoveAsync(
+                obsoleteItem.Path.AdjustParent(options.TargetDir).AdjustSeparator());
     }
 
     public void CleanupObsoleteItems(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
