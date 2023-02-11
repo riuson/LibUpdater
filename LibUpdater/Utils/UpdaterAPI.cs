@@ -66,12 +66,12 @@ public class UpdaterAPI
 
     public async Task<IEnumerable<IArchiveItem>> GetIndexAsync(
         UpdateOptions options,
-        string version)
+        string path)
     {
         try
         {
             _downloader.Progress += ProgressHandler;
-            var indexUri = CombineUrl(options.UpdatesUri, version, options.IndexFile);
+            var indexUri = CombineUrl(options.UpdatesUri, path, options.IndexFile);
             var indexJson = await _downloader.DownloadStringAsync(indexUri);
             var decoder = new JsonDecoder();
             var result = decoder.DecodeIndex(indexJson);
@@ -85,12 +85,12 @@ public class UpdaterAPI
 
     public IEnumerable<IArchiveItem> GetIndex(
         UpdateOptions options,
-        string version)
+        string path)
     {
         try
         {
             _downloader.Progress += ProgressHandler;
-            var indexUri = CombineUrl(options.UpdatesUri, version, options.IndexFile);
+            var indexUri = CombineUrl(options.UpdatesUri, path, options.IndexFile);
             var indexJsonString = _downloader.DownloadString(indexUri);
             var decoder = new JsonDecoder();
             var result = decoder.DecodeIndex(indexJsonString);
@@ -104,7 +104,7 @@ public class UpdaterAPI
 
     public void GetArchiveItems(
         UpdateOptions options,
-        string version,
+        string path,
         IEnumerable<IArchiveItem> archiveItems)
     {
         var totalSize = archiveItems.Sum(x => x.ArchiveSize);
@@ -124,7 +124,7 @@ public class UpdaterAPI
 
             string archiveItemUri(string hash)
             {
-                return CombineUrl(options.UpdatesUri, version, hash);
+                return CombineUrl(options.UpdatesUri, path, hash);
             }
 
             string archiveItemPath(string hash)
@@ -147,7 +147,7 @@ public class UpdaterAPI
 
     public async Task GetArchiveItemsAsync(
         UpdateOptions options,
-        string version,
+        string path,
         IEnumerable<IArchiveItem> archiveItems)
     {
         var totalSize = archiveItems.Sum(x => x.ArchiveSize);
@@ -167,7 +167,7 @@ public class UpdaterAPI
 
             string archiveItemUri(string hash)
             {
-                return CombineUrl(options.UpdatesUri, version, hash);
+                return CombineUrl(options.UpdatesUri, path, hash);
             }
 
             string archiveItemPath(string hash)
