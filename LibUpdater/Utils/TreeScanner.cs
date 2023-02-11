@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using LibUpdater.Data;
 
@@ -76,22 +75,9 @@ public class TreeScanner
 
             var result = new ConcurrentBag<IFileItem>();
 
-            using var semaphore = new SemaphoreSlim(degreeOfParallelism, degreeOfParallelism);
-            var tasks = fileItems.Select(async fileItem =>
-            {
-                await semaphore.WaitAsync();
-                try
-                {
-                    result.Add(await CalculateHashAsync(fileItem));
-                    ;
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            });
-
-            await Task.WhenAll(tasks);
+            await fileItems.ForEachAsync(
+                degreeOfParallelism,
+                async fileItem => result.Add(await CalculateHashAsync(fileItem)));
 
             return result.ToArray();
         }
