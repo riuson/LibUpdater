@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
+using LibUpdater.Data;
 
 namespace LibUpdater.Utils;
 
@@ -8,6 +10,7 @@ public interface IDownloader
     string DownloadString(string uri);
     Task<string> DownloadStringAsync(string uri);
     Task<Stream> OpenReadStreamAsync(string uri);
-    void DownloadFile(string uri, string path);
-    Task DownloadFileAsync(string uri, string path);
+    void DownloadFile(string uri, string path, long size = -1);
+    Task DownloadFileAsync(string uri, string path, long size = -1);
+    event EventHandler<ProgressEventArgs> Progress;
 }
