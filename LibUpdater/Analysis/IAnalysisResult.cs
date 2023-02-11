@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using LibUpdater.Data;
 
-namespace LibUpdater.Tests.Utils;
+namespace LibUpdater.Analysis;
 
-public interface IAnalyzeResult
+public interface IAnalysisResult
 {
     bool IsEquals { get; }
     IEnumerable<IFileItem> Obsolete { get; }

@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using LibUpdater.Analysis;
 using LibUpdater.Data;
 using Moq;
 

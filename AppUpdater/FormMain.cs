@@ -1,6 +1,6 @@
 ﻿using LibUpdater;
+using LibUpdater.Analysis;
 using LibUpdater.Data;
-using LibUpdater.Tests.Utils;
 using LibUpdater.Utils;
 
 namespace AppUpdater;
@@ -124,7 +124,7 @@ public partial class FormMain : Form
             return confirm;
         }
 
-        async Task<bool> confirmAnalysis(IAnalyzeResult analysisResult)
+        async Task<bool> confirmAnalysis(IAnalysisResult analysisResult)
         {
             var buttonContinue = new TaskDialogButton("Продолжить", true, false);
             var buttonCancel = new TaskDialogButton("Отменить");
@@ -173,7 +173,7 @@ public partial class FormMain : Form
             return confirm;
         }
 
-        async Task<bool> confirmApply(IAnalyzeResult analysisResult)
+        async Task<bool> confirmApply(IAnalysisResult analysisResult)
         {
             var buttonContinue = new TaskDialogButton("Продолжить", true, false);
             var buttonCancel = new TaskDialogButton("Отменить");

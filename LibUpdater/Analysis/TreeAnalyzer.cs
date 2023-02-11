@@ -2,11 +2,11 @@
 using System.Linq;
 using LibUpdater.Data;
 
-namespace LibUpdater.Tests.Utils;
+namespace LibUpdater.Analysis;
 
 public class TreeAnalyzer
 {
-    public IAnalyzeResult Analyze(
+    public IAnalysisResult Analyze(
         string targetDirectory,
         IEnumerable<IFileItem> localItems,
         IEnumerable<IArchiveItem> remoteItems)
@@ -25,7 +25,7 @@ public class TreeAnalyzer
             .Cast<IArchiveItem>()
             .ToArray();
 
-        return new AnalyzeResult
+        return new AnalysisResult
         {
             IsEquals = isEquals,
             Added = addedItems,

@@ -3,7 +3,7 @@ using System.IO;
 using LibUpdater.Data;
 using LibUpdater.Utils;
 
-namespace LibUpdater.Tests.Utils;
+namespace LibUpdater.Analysis;
 
 internal class ItemsEqualityComparer : IEqualityComparer<IFileItem>
 {

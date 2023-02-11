@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LibUpdater.Analysis;
 using LibUpdater.Data;
-using LibUpdater.Tests.Utils;
 using LibUpdater.Utils;
 
 namespace LibUpdater;
@@ -13,8 +13,8 @@ public class Updater
         UpdateOptions options,
         Func<IActualVersionInfo, Task<bool>> confirmVersion,
         Func<IEnumerable<IArchiveItem>, Task<bool>> confirmIndex,
-        Func<IAnalyzeResult, Task<bool>> confirmAnalyzed,
-        Func<IAnalyzeResult, Task<bool>> confirmApply)
+        Func<IAnalysisResult, Task<bool>> confirmAnalysis,
+        Func<IAnalysisResult, Task<bool>> confirmApply)
     {
         var api = new UpdaterAPI();
 
@@ -30,19 +30,19 @@ public class Updater
         var localItems = await scanner.ScanTreeAsync(options.TargetDir, options.DegreeOfParallelism);
 
         var analyzer = new TreeAnalyzer();
-        var analyzed = analyzer.Analyze(
+        var analysisResult = analyzer.Analyze(
             options.TargetDir,
             localItems,
             indexItems);
 
-        if (!await confirmAnalyzed(analyzed)) return;
+        if (!await confirmAnalysis(analysisResult)) return;
 
-        await api.GetArchiveItemsAsync(options, versionInfo.Path, analyzed.Added);
+        await api.GetArchiveItemsAsync(options, versionInfo.Path, analysisResult.Added);
 
-        if (!await confirmApply(analyzed)) return;
+        if (!await confirmApply(analysisResult)) return;
 
-        await api.CleanupObsoleteItemsAsync(options, analyzed.Obsolete);
+        await api.CleanupObsoleteItemsAsync(options, analysisResult.Obsolete);
 
-        await api.ApplyArchiveItemsAsync(options, analyzed.Added);
+        await api.ApplyArchiveItemsAsync(options, analysisResult.Added);
     }
 }

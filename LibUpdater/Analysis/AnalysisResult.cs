@@ -2,9 +2,9 @@
 using System.Linq;
 using LibUpdater.Data;
 
-namespace LibUpdater.Tests.Utils;
+namespace LibUpdater.Analysis;
 
-internal class AnalyzeResult : IAnalyzeResult
+internal class AnalysisResult : IAnalysisResult
 {
     public bool IsEquals { get; set; } = false;
     public IEnumerable<IFileItem> Obsolete { get; set; } = new IFileItem[] { };
