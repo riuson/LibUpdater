@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -16,6 +17,12 @@ internal class Downloader : IDownloader
     {
         using var client = new WebClient();
         return client.DownloadStringTaskAsync(new Uri(uri));
+    }
+
+    public Task<Stream> OpenReadStreamAsync(string uri)
+    {
+        using var client = new WebClient();
+        return client.OpenReadTaskAsync(new Uri(uri));
     }
 
     public void DownloadFile(string uri, string path)
