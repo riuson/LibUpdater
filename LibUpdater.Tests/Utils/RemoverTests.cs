@@ -11,7 +11,7 @@ internal class RemoverTests
         File = 1 << 0,
         File1 = 1 << 1,
         File2 = 1 << 2,
-        TempDir = 1 << 3,
+        RootDir = 1 << 3,
         SubDir1 = 1 << 4,
         SubDir2 = 1 << 5
     }
@@ -134,7 +134,7 @@ internal class RemoverTests
 
         remover.RemoveEmptyDirs(_tempDir.FullName);
 
-        Assert.That(_tempDir.Exists, Is.EqualTo((item.keep & KeepItem.TempDir) == KeepItem.TempDir));
+        Assert.That(_tempDir.Exists, Is.EqualTo((item.keep & KeepItem.RootDir) == KeepItem.RootDir));
         Assert.That(_subDir1.Exists, Is.EqualTo((item.keep & KeepItem.SubDir1) == KeepItem.SubDir1));
         Assert.That(_subDir2.Exists, Is.EqualTo((item.keep & KeepItem.SubDir2) == KeepItem.SubDir2));
     }
@@ -155,7 +155,7 @@ internal class RemoverTests
 
         await remover.RemoveEmptyDirsAsync(_tempDir.FullName);
 
-        Assert.That(_tempDir.Exists, Is.EqualTo((item.keep & KeepItem.TempDir) == KeepItem.TempDir));
+        Assert.That(_tempDir.Exists, Is.EqualTo((item.keep & KeepItem.RootDir) == KeepItem.RootDir));
         Assert.That(_subDir1.Exists, Is.EqualTo((item.keep & KeepItem.SubDir1) == KeepItem.SubDir1));
         Assert.That(_subDir2.Exists, Is.EqualTo((item.keep & KeepItem.SubDir2) == KeepItem.SubDir2));
     }
@@ -163,12 +163,12 @@ internal class RemoverTests
     private static IEnumerable<(RemoveItem remove, KeepItem keep)> TestItems()
     {
         yield return (RemoveItem.None,
-            KeepItem.TempDir | KeepItem.SubDir1 | KeepItem.SubDir2 | KeepItem.File | KeepItem.File1 | KeepItem.File2);
+            KeepItem.RootDir | KeepItem.SubDir1 | KeepItem.SubDir2 | KeepItem.File | KeepItem.File1 | KeepItem.File2);
         yield return (RemoveItem.File,
-            KeepItem.TempDir | KeepItem.SubDir1 | KeepItem.SubDir2 | KeepItem.File1 | KeepItem.File2);
-        yield return (RemoveItem.File1, KeepItem.TempDir | KeepItem.SubDir2 | KeepItem.File | KeepItem.File2);
-        yield return (RemoveItem.File2, KeepItem.TempDir | KeepItem.SubDir1 | KeepItem.File | KeepItem.File1);
-        yield return (RemoveItem.File1 | RemoveItem.File2, KeepItem.TempDir | KeepItem.File);
-        yield return (RemoveItem.File | RemoveItem.File1 | RemoveItem.File2, KeepItem.None);
+            KeepItem.RootDir | KeepItem.SubDir1 | KeepItem.SubDir2 | KeepItem.File1 | KeepItem.File2);
+        yield return (RemoveItem.File1, KeepItem.RootDir | KeepItem.SubDir2 | KeepItem.File | KeepItem.File2);
+        yield return (RemoveItem.File2, KeepItem.RootDir | KeepItem.SubDir1 | KeepItem.File | KeepItem.File1);
+        yield return (RemoveItem.File1 | RemoveItem.File2, KeepItem.RootDir | KeepItem.File);
+        yield return (RemoveItem.File | RemoveItem.File1 | RemoveItem.File2, KeepItem.RootDir);
     }
 }

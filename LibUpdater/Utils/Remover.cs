@@ -38,8 +38,8 @@ internal class Remover : IRemover
             if (directoryInfo.Exists)
                 directoryInfo.Delete();
 
-        if (!isAnyChild(directoryRoot))
-            directoryRoot.Delete();
+        //if (!isAnyChild(directoryRoot))
+        //    directoryRoot.Delete();
     }
 
     public Task RemoveEmptyDirsAsync(string path)
