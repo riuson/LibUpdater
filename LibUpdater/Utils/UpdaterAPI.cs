@@ -8,20 +8,20 @@ using LibUpdater.Data;
 
 namespace LibUpdater.Utils;
 
-public class Updater
+public class UpdaterAPI
 {
     private readonly IDownloader _downloader;
     private readonly IRemover _remover;
     private readonly IUnpacker _unpacker;
 
-    public Updater()
+    public UpdaterAPI()
     {
         _downloader = new Downloader();
         _unpacker = new Unpacker();
         _remover = new Remover();
     }
 
-    public Updater(
+    public UpdaterAPI(
         IDownloader downloader,
         IUnpacker unpacker,
         IRemover remover)

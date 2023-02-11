@@ -13,7 +13,7 @@ public partial class FormMain : Form
         Path.GetDirectoryName(Application.ExecutablePath),
         "temp");
 
-    private readonly Updater _updater = new();
+    private readonly UpdaterAPI _updater = new();
 
     public FormMain()
     {

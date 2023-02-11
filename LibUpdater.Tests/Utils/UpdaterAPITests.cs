@@ -4,7 +4,7 @@ using Moq;
 
 namespace LibUpdater.Tests.Utils;
 
-internal class UpdaterTests
+internal class UpdaterAPITests
 {
     [Test]
     public void GetLatestVersionShould()
@@ -14,7 +14,7 @@ internal class UpdaterTests
             .Returns("version1")
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object, null, null);
+        var updater = new UpdaterAPI(downloaderMock.Object, null, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost:81";
@@ -34,7 +34,7 @@ internal class UpdaterTests
             .Returns(Task.FromResult("version1"))
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object, null, null);
+        var updater = new UpdaterAPI(downloaderMock.Object, null, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost:81";
@@ -56,7 +56,7 @@ internal class UpdaterTests
             .Returns(json)
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object, null, null);
+        var updater = new UpdaterAPI(downloaderMock.Object, null, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost";
@@ -91,7 +91,7 @@ internal class UpdaterTests
             .Returns(Task.FromResult(json))
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object, null, null);
+        var updater = new UpdaterAPI(downloaderMock.Object, null, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost";
@@ -137,7 +137,7 @@ internal class UpdaterTests
         downloaderMock.Setup(mock => mock.DownloadFile(It.IsAny<string>(), It.IsAny<string>(), -1))
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object, null, null);
+        var updater = new UpdaterAPI(downloaderMock.Object, null, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost";
@@ -173,7 +173,7 @@ internal class UpdaterTests
         downloaderMock.Setup(mock => mock.DownloadFileAsync(It.IsAny<string>(), It.IsAny<string>(), -1))
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object, null, null);
+        var updater = new UpdaterAPI(downloaderMock.Object, null, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost";
@@ -224,7 +224,7 @@ internal class UpdaterTests
         downloaderMock.Setup(mock => mock.DownloadFile(It.IsAny<string>(), It.IsAny<string>(), -1))
             .Verifiable();
 
-        var updater = new Updater(downloaderMock.Object, null, null);
+        var updater = new UpdaterAPI(downloaderMock.Object, null, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost";
@@ -265,7 +265,7 @@ internal class UpdaterTests
         unpackerMock.Setup(mock => mock.Unpack(It.IsAny<string>(), It.IsAny<string>()))
             .Verifiable();
 
-        var updater = new Updater(null, unpackerMock.Object, null);
+        var updater = new UpdaterAPI(null, unpackerMock.Object, null);
 
         var options = new UpdateOptions
         {
@@ -307,7 +307,7 @@ internal class UpdaterTests
         unpackerMock.Setup(mock => mock.UnpackAsync(It.IsAny<string>(), It.IsAny<string>()))
             .Verifiable();
 
-        var updater = new Updater(null, unpackerMock.Object, null);
+        var updater = new UpdaterAPI(null, unpackerMock.Object, null);
 
         var options = new UpdateOptions
         {
@@ -351,7 +351,7 @@ internal class UpdaterTests
         removerMock.Setup(mock => mock.RemoveEmptyDirs(It.IsAny<string>()))
             .Verifiable();
 
-        var updater = new Updater(null, null, removerMock.Object);
+        var updater = new UpdaterAPI(null, null, removerMock.Object);
 
         var options = new UpdateOptions();
         options.TargetDir = @"C:\Windows\Temp".AdjustSeparator();
@@ -389,7 +389,7 @@ internal class UpdaterTests
         removerMock.Setup(mock => mock.RemoveEmptyDirsAsync(It.IsAny<string>()))
             .Verifiable();
 
-        var updater = new Updater(null, null, removerMock.Object);
+        var updater = new UpdaterAPI(null, null, removerMock.Object);
 
         var options = new UpdateOptions();
         options.TargetDir = @"C:\Windows\Temp".AdjustSeparator();
