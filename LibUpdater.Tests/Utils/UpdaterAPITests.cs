@@ -10,40 +10,44 @@ internal class UpdaterAPITests
     public void GetLatestVersionShould()
     {
         var downloaderMock = new Mock<IDownloader>();
-        downloaderMock.Setup(mock => mock.DownloadString("https://localhost:81/version_file.txt"))
-            .Returns("version1")
+        downloaderMock.Setup(mock => mock.DownloadString("https://localhost:81/version_file.json"))
+            .Returns("{\"version\":\"1.2.3.4\",\"path\":\"somepath\",\"description\":\"desc\"}")
             .Verifiable();
 
         var updater = new UpdaterAPI(downloaderMock.Object, null, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost:81";
-        options.VersionFile = "version_file.txt";
+        options.VersionFile = "version_file.json";
 
-        var version = updater.GetLatestVersion(options);
+        var versionInfo = updater.GetActualVersion(options);
 
-        Assert.That(version, Is.EqualTo("version1"));
-        downloaderMock.Verify(t => t.DownloadString("https://localhost:81/version_file.txt"));
+        Assert.That(versionInfo.Version, Is.EqualTo(new Version(1, 2, 3, 4)));
+        Assert.That(versionInfo.Path, Is.EqualTo("somepath"));
+        Assert.That(versionInfo.Description, Is.EqualTo("desc"));
+        downloaderMock.Verify(t => t.DownloadString("https://localhost:81/version_file.json"));
     }
 
     [Test]
     public async Task GetLatestVersionAsyncShould()
     {
         var downloaderMock = new Mock<IDownloader>();
-        downloaderMock.Setup(mock => mock.DownloadStringAsync("https://localhost:81/version_file.txt"))
-            .Returns(Task.FromResult("version1"))
+        downloaderMock.Setup(mock => mock.DownloadStringAsync("https://localhost:81/version_file.json"))
+            .Returns(Task.FromResult("{\"version\":\"1.2.3.4\",\"path\":\"somepath\",\"description\":\"desc\"}"))
             .Verifiable();
 
         var updater = new UpdaterAPI(downloaderMock.Object, null, null);
 
         var options = new UpdateOptions();
         options.UpdatesUri = "https://localhost:81";
-        options.VersionFile = "version_file.txt";
+        options.VersionFile = "version_file.json";
 
-        var version = await updater.GetLatestVersionAsync(options);
+        var versionInfo = await updater.GetActualVersionAsync(options);
 
-        Assert.That(version, Is.EqualTo("version1"));
-        downloaderMock.Verify(t => t.DownloadStringAsync("https://localhost:81/version_file.txt"));
+        Assert.That(versionInfo.Version, Is.EqualTo(new Version(1, 2, 3, 4)));
+        Assert.That(versionInfo.Path, Is.EqualTo("somepath"));
+        Assert.That(versionInfo.Description, Is.EqualTo("desc"));
+        downloaderMock.Verify(t => t.DownloadStringAsync("https://localhost:81/version_file.json"));
     }
 
     [TestCaseSource(nameof(TestJsonIndexResources))]

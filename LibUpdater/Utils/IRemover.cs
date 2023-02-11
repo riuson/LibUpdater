@@ -13,9 +13,10 @@ public interface IRemover
     Task RemoveFileAsync(string path);
 
     /// <summary>
-    /// Remove all empty subdirectories in directory specified by <paramref name="path"/>.
+    ///     Remove all empty subdirectories in directory specified by <paramref name="path" />.
     /// </summary>
     /// <param name="path"></param>
     void RemoveEmptyDirs(string path);
+
     Task RemoveEmptyDirsAsync(string path);
 }

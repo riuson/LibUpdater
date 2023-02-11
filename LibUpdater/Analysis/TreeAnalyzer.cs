@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Collections.Generic;
 using LibUpdater.Data;
 
 namespace LibUpdater.Tests.Utils;
@@ -26,11 +25,11 @@ public class TreeAnalyzer
             .Cast<IArchiveItem>()
             .ToArray();
 
-        return new AnalyzeResult()
+        return new AnalyzeResult
         {
             IsEquals = isEquals,
             Added = addedItems,
-            Obsolete = obsoleteItems,
+            Obsolete = obsoleteItems
         };
     }
 }
