@@ -159,7 +159,6 @@ partial class FormMain
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "FormMain";
             this.Text = "FormMain";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
             this.ResumeLayout(false);

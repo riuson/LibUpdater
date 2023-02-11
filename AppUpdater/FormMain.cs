@@ -348,10 +348,4 @@ public partial class FormMain : Form
 
         buttonGo.Enabled = true;
     }
-
-    private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
-    {
-        if (Directory.Exists(_tempDir))
-            Directory.Delete(_tempDir, true);
-    }
 }

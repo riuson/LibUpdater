@@ -46,4 +46,21 @@ internal class Remover : IRemover
     {
         return Task.Run(() => RemoveEmptyDirs(path));
     }
+
+    public void RemoveChilds(string path)
+    {
+        var directoryRoot = new DirectoryInfo(path);
+        var subDirectories = directoryRoot.GetDirectories("*", SearchOption.TopDirectoryOnly);
+        var files = directoryRoot.GetFiles("*", SearchOption.TopDirectoryOnly);
+
+        foreach (var directoryInfo in subDirectories)
+            directoryInfo.Delete(true);
+
+        foreach (var fileInfo in files) fileInfo.Delete();
+    }
+
+    public Task RemoveChildsAsync(string path)
+    {
+        return Task.Run(() => RemoveChilds(path));
+    }
 }

@@ -47,6 +47,9 @@ public class Updater
 
         await api.ApplyArchiveItemsAsync(options, analysisResult.Added);
 
+        var remover = new Remover();
+        await remover.RemoveChildsAsync(options.TempDir);
+
         await confirmComplete();
 
         api.Progress -= OnProgress;

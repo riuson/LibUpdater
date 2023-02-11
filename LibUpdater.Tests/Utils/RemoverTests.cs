@@ -5,6 +5,15 @@ namespace LibUpdater.Tests.Utils;
 internal class RemoverTests
 {
     [Flags]
+    public enum CleanChildsItem
+    {
+        None = 0,
+        RootDir = 1 << 1,
+        SubDir1 = 1 << 2,
+        SubDir2 = 1 << 3
+    }
+
+    [Flags]
     public enum KeepItem
     {
         None = 0,
@@ -80,7 +89,7 @@ internal class RemoverTests
             _tempDir.Delete(true);
     }
 
-    [TestCaseSource(nameof(TestItems))]
+    [TestCaseSource(nameof(TestItemsSelectiveDelete))]
     public void RemoveFileShould((RemoveItem remove, KeepItem keep) item)
     {
         var remover = new Remover();
@@ -99,7 +108,7 @@ internal class RemoverTests
         Assert.That(_file2.Exists, Is.EqualTo((item.keep & KeepItem.File2) == KeepItem.File2));
     }
 
-    [TestCaseSource(nameof(TestItems))]
+    [TestCaseSource(nameof(TestItemsSelectiveDelete))]
     public async Task RemoveFileAsyncShould((RemoveItem remove, KeepItem keep) item)
     {
         var remover = new Remover();
@@ -118,7 +127,7 @@ internal class RemoverTests
         Assert.That(_file2.Exists, Is.EqualTo((item.keep & KeepItem.File2) == KeepItem.File2));
     }
 
-    [TestCaseSource(nameof(TestItems))]
+    [TestCaseSource(nameof(TestItemsSelectiveDelete))]
     public void RemoveEmptyDirsShould((RemoveItem remove, KeepItem keep) item)
     {
         var remover = new Remover();
@@ -139,7 +148,7 @@ internal class RemoverTests
         Assert.That(_subDir2.Exists, Is.EqualTo((item.keep & KeepItem.SubDir2) == KeepItem.SubDir2));
     }
 
-    [TestCaseSource(nameof(TestItems))]
+    [TestCaseSource(nameof(TestItemsSelectiveDelete))]
     public async Task RemoveEmptyDirsAsyncShould((RemoveItem remove, KeepItem keep) item)
     {
         var remover = new Remover();
@@ -160,7 +169,45 @@ internal class RemoverTests
         Assert.That(_subDir2.Exists, Is.EqualTo((item.keep & KeepItem.SubDir2) == KeepItem.SubDir2));
     }
 
-    private static IEnumerable<(RemoveItem remove, KeepItem keep)> TestItems()
+    [TestCaseSource(nameof(TestItemsChildsDelete))]
+    public void RemoveChildsShould((CleanChildsItem clean, KeepItem keep) item)
+    {
+        var remover = new Remover();
+
+        if ((item.clean & CleanChildsItem.SubDir1) == CleanChildsItem.SubDir1)
+            remover.RemoveChilds(_subDir1.FullName);
+
+        if ((item.clean & CleanChildsItem.SubDir2) == CleanChildsItem.SubDir2)
+            remover.RemoveChilds(_subDir2.FullName);
+
+        if ((item.clean & CleanChildsItem.RootDir) == CleanChildsItem.RootDir)
+            remover.RemoveChilds(_tempDir.FullName);
+
+        Assert.That(_tempDir.Exists, Is.EqualTo((item.keep & KeepItem.RootDir) == KeepItem.RootDir));
+        Assert.That(_subDir1.Exists, Is.EqualTo((item.keep & KeepItem.SubDir1) == KeepItem.SubDir1));
+        Assert.That(_subDir2.Exists, Is.EqualTo((item.keep & KeepItem.SubDir2) == KeepItem.SubDir2));
+    }
+
+    [TestCaseSource(nameof(TestItemsChildsDelete))]
+    public async Task RemoveChildsAsyncShould((CleanChildsItem clean, KeepItem keep) item)
+    {
+        var remover = new Remover();
+
+        if ((item.clean & CleanChildsItem.SubDir1) == CleanChildsItem.SubDir1)
+            remover.RemoveChilds(_subDir1.FullName);
+
+        if ((item.clean & CleanChildsItem.SubDir2) == CleanChildsItem.SubDir2)
+            remover.RemoveChilds(_subDir2.FullName);
+
+        if ((item.clean & CleanChildsItem.RootDir) == CleanChildsItem.RootDir)
+            remover.RemoveChilds(_tempDir.FullName);
+
+        Assert.That(_tempDir.Exists, Is.EqualTo((item.keep & KeepItem.RootDir) == KeepItem.RootDir));
+        Assert.That(_subDir1.Exists, Is.EqualTo((item.keep & KeepItem.SubDir1) == KeepItem.SubDir1));
+        Assert.That(_subDir2.Exists, Is.EqualTo((item.keep & KeepItem.SubDir2) == KeepItem.SubDir2));
+    }
+
+    private static IEnumerable<(RemoveItem remove, KeepItem keep)> TestItemsSelectiveDelete()
     {
         yield return (RemoveItem.None,
             KeepItem.RootDir | KeepItem.SubDir1 | KeepItem.SubDir2 | KeepItem.File | KeepItem.File1 | KeepItem.File2);
@@ -170,5 +217,18 @@ internal class RemoverTests
         yield return (RemoveItem.File2, KeepItem.RootDir | KeepItem.SubDir1 | KeepItem.File | KeepItem.File1);
         yield return (RemoveItem.File1 | RemoveItem.File2, KeepItem.RootDir | KeepItem.File);
         yield return (RemoveItem.File | RemoveItem.File1 | RemoveItem.File2, KeepItem.RootDir);
+    }
+
+    private static IEnumerable<(CleanChildsItem clean, KeepItem keep)> TestItemsChildsDelete()
+    {
+        yield return (CleanChildsItem.None,
+            KeepItem.RootDir | KeepItem.SubDir1 | KeepItem.SubDir2 | KeepItem.File | KeepItem.File1 | KeepItem.File2);
+        yield return (CleanChildsItem.RootDir, KeepItem.RootDir);
+        yield return (CleanChildsItem.SubDir1,
+            KeepItem.RootDir | KeepItem.SubDir1 | KeepItem.SubDir2 | KeepItem.File | KeepItem.File2);
+        yield return (CleanChildsItem.SubDir2,
+            KeepItem.RootDir | KeepItem.SubDir1 | KeepItem.SubDir2 | KeepItem.File | KeepItem.File1);
+        yield return (CleanChildsItem.SubDir1 | CleanChildsItem.SubDir2,
+            KeepItem.RootDir | KeepItem.SubDir1 | KeepItem.SubDir2 | KeepItem.File);
     }
 }
