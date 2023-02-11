@@ -287,18 +287,34 @@ public class Updater
 
     public void CleanupObsoleteItems(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
     {
+        var totalCount = obsoleteItems.Count();
+        var current = 0;
+        var id = Guid.NewGuid();
+
         foreach (var obsoleteItem in obsoleteItems)
+        {
             _remover.RemoveFile(
                 obsoleteItem.Path.AdjustParent(options.TargetDir).AdjustSeparator());
+            current++;
+            ReportProgress(current, totalCount, id);
+        }
 
         _remover.RemoveEmptyDirs(options.TargetDir);
     }
 
     public async Task CleanupObsoleteItemsAsync(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
     {
+        var totalCount = obsoleteItems.Count();
+        var current = 0;
+        var id = Guid.NewGuid();
+
         foreach (var obsoleteItem in obsoleteItems)
+        {
             await _remover.RemoveFileAsync(
                 obsoleteItem.Path.AdjustParent(options.TargetDir).AdjustSeparator());
+            current++;
+            ReportProgress(current, totalCount, id);
+        }
 
         await _remover.RemoveEmptyDirsAsync(options.TargetDir);
     }
