@@ -1,32 +1,92 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using LibUpdater.Data;
 
-namespace LibUpdater.Utils
+namespace LibUpdater.Utils;
+
+internal class Hasher : IHasher
 {
-    public class Hasher
+    public string HashStream(Stream stream, long length = -1)
     {
-        public string HashStream(Stream stream)
+        using var hashAlg = new SHA1Managed();
+        var id = Guid.NewGuid();
+
+        var buffer = new byte[1024 * 1024];
+        var totalReaded = 0L;
+
+        while (true)
         {
-            using (SHA1Managed sha1 = new SHA1Managed())
+            var readed = stream.Read(buffer, 0, buffer.Length);
+            totalReaded += readed;
+
+            if (readed > 0)
             {
-                var hash = sha1.ComputeHash(stream);
-                var sb = new StringBuilder(hash.Length * 2);
+                hashAlg.TransformBlock(buffer, 0, readed, buffer, 0);
 
-                foreach (byte b in hash)
-                {
-                    // can be "x2" if you want lowercase
-                    sb.Append(b.ToString("X2"));
-                }
-
-                return sb.ToString().ToLower();
+                if (length > 0) ReportProgress(totalReaded, length, id);
+            }
+            else
+            {
+                hashAlg.TransformFinalBlock(buffer, 0, readed);
+                ReportProgress(totalReaded, totalReaded, id);
+                return ByteArrayToString(hashAlg.Hash);
             }
         }
+    }
 
-        public Task<string> HashStreamAsync(Stream stream)
+    public async Task<string> HashStreamAsync(Stream stream, long length = -1)
+    {
+        using var hashAlg = new SHA1Managed();
+        var id = Guid.NewGuid();
+
+        var buffer = new byte[1024 * 1024];
+        var totalReaded = 0L;
+
+        while (true)
         {
-            return Task<string>.Run(() => this.HashStream(stream));
+            var readed = await stream.ReadAsync(buffer, 0, buffer.Length);
+            totalReaded += readed;
+
+            if (readed > 0)
+            {
+                hashAlg.TransformBlock(buffer, 0, readed, buffer, 0);
+
+                if (length > 0) ReportProgress(totalReaded, length, id);
+            }
+            else
+            {
+                hashAlg.TransformFinalBlock(buffer, 0, readed);
+                ReportProgress(totalReaded, totalReaded, id);
+                return ByteArrayToString(hashAlg.Hash);
+            }
         }
+    }
+
+    public event EventHandler<ProgressEventArgs> Progress;
+
+    private string ByteArrayToString(byte[] array)
+    {
+        var sb = new StringBuilder(array.Length * 2);
+
+        foreach (var b in array)
+            // can be "x2" if you want lowercase
+            sb.Append(b.ToString("X2"));
+
+        return sb.ToString().ToLower();
+    }
+
+    private void ReportProgress(long current, long total, Guid id)
+    {
+        Progress?.Invoke(
+            this,
+            new ProgressEventArgs
+            {
+                Current = current,
+                Total = total,
+                Id = id
+            });
     }
 }
