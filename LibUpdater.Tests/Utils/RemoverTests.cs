@@ -81,55 +81,83 @@ internal class RemoverTests
     }
 
     [TestCaseSource(nameof(TestItems))]
-    public void ShouldRemove(
-        RemoveItem remove,
-        KeepItem keep)
+    public void RemoveFileShould((RemoveItem remove, KeepItem keep) item)
     {
         var remover = new Remover();
 
-        if ((remove & RemoveItem.File) == RemoveItem.File)
-            remover.Remove(_file.FullName);
+        if ((item.remove & RemoveItem.File) == RemoveItem.File)
+            remover.RemoveFile(_file.FullName);
 
-        if ((remove & RemoveItem.File1) == RemoveItem.File1)
-            remover.Remove(_file1.FullName);
+        if ((item.remove & RemoveItem.File1) == RemoveItem.File1)
+            remover.RemoveFile(_file1.FullName);
 
-        if ((remove & RemoveItem.File2) == RemoveItem.File2)
-            remover.Remove(_file2.FullName);
+        if ((item.remove & RemoveItem.File2) == RemoveItem.File2)
+            remover.RemoveFile(_file2.FullName);
 
-        Assert.That(_file.Exists, Is.EqualTo((keep & KeepItem.File) == KeepItem.File));
-        Assert.That(_file1.Exists, Is.EqualTo((keep & KeepItem.File1) == KeepItem.File1));
-        Assert.That(_file2.Exists, Is.EqualTo((keep & KeepItem.File2) == KeepItem.File2));
-
-        // Order-depended. TODO Fix.
-        Assert.That(_tempDir.Exists, Is.EqualTo((keep & KeepItem.TempDir) == KeepItem.TempDir));
-        Assert.That(_subDir1.Exists, Is.EqualTo((keep & KeepItem.SubDir1) == KeepItem.SubDir1));
-        Assert.That(_subDir2.Exists, Is.EqualTo((keep & KeepItem.SubDir2) == KeepItem.SubDir2));
+        Assert.That(_file.Exists, Is.EqualTo((item.keep & KeepItem.File) == KeepItem.File));
+        Assert.That(_file1.Exists, Is.EqualTo((item.keep & KeepItem.File1) == KeepItem.File1));
+        Assert.That(_file2.Exists, Is.EqualTo((item.keep & KeepItem.File2) == KeepItem.File2));
     }
 
     [TestCaseSource(nameof(TestItems))]
-    public async Task ShouldRemoveAsync(
-        RemoveItem remove,
-        KeepItem keep)
+    public async Task RemoveFileAsyncShould((RemoveItem remove, KeepItem keep) item)
     {
         var remover = new Remover();
 
-        if ((remove & RemoveItem.File) == RemoveItem.File)
-            await remover.RemoveAsync(_file.FullName);
+        if ((item.remove & RemoveItem.File) == RemoveItem.File)
+            await remover.RemoveFileAsync(_file.FullName);
 
-        if ((remove & RemoveItem.File1) == RemoveItem.File1)
-            await remover.RemoveAsync(_file1.FullName);
+        if ((item.remove & RemoveItem.File1) == RemoveItem.File1)
+            await remover.RemoveFileAsync(_file1.FullName);
 
-        if ((remove & RemoveItem.File2) == RemoveItem.File2)
-            await remover.RemoveAsync(_file2.FullName);
+        if ((item.remove & RemoveItem.File2) == RemoveItem.File2)
+            await remover.RemoveFileAsync(_file2.FullName);
 
-        Assert.That(_file.Exists, Is.EqualTo((keep & KeepItem.File) == KeepItem.File));
-        Assert.That(_file1.Exists, Is.EqualTo((keep & KeepItem.File1) == KeepItem.File1));
-        Assert.That(_file2.Exists, Is.EqualTo((keep & KeepItem.File2) == KeepItem.File2));
+        Assert.That(_file.Exists, Is.EqualTo((item.keep & KeepItem.File) == KeepItem.File));
+        Assert.That(_file1.Exists, Is.EqualTo((item.keep & KeepItem.File1) == KeepItem.File1));
+        Assert.That(_file2.Exists, Is.EqualTo((item.keep & KeepItem.File2) == KeepItem.File2));
+    }
 
-        // Order-depended. TODO Fix.
-        Assert.That(_tempDir.Exists, Is.EqualTo((keep & KeepItem.TempDir) == KeepItem.TempDir));
-        Assert.That(_subDir1.Exists, Is.EqualTo((keep & KeepItem.SubDir1) == KeepItem.SubDir1));
-        Assert.That(_subDir2.Exists, Is.EqualTo((keep & KeepItem.SubDir2) == KeepItem.SubDir2));
+    [TestCaseSource(nameof(TestItems))]
+    public void RemoveEmptyDirsShould((RemoveItem remove, KeepItem keep) item)
+    {
+        var remover = new Remover();
+
+        if ((item.remove & RemoveItem.File) == RemoveItem.File)
+            remover.RemoveFile(_file.FullName);
+
+        if ((item.remove & RemoveItem.File1) == RemoveItem.File1)
+            remover.RemoveFile(_file1.FullName);
+
+        if ((item.remove & RemoveItem.File2) == RemoveItem.File2)
+            remover.RemoveFile(_file2.FullName);
+
+        remover.RemoveEmptyDirs(_tempDir.FullName);
+
+        Assert.That(_tempDir.Exists, Is.EqualTo((item.keep & KeepItem.TempDir) == KeepItem.TempDir));
+        Assert.That(_subDir1.Exists, Is.EqualTo((item.keep & KeepItem.SubDir1) == KeepItem.SubDir1));
+        Assert.That(_subDir2.Exists, Is.EqualTo((item.keep & KeepItem.SubDir2) == KeepItem.SubDir2));
+    }
+
+    [TestCaseSource(nameof(TestItems))]
+    public async Task RemoveEmptyDirsAsyncShould((RemoveItem remove, KeepItem keep) item)
+    {
+        var remover = new Remover();
+
+        if ((item.remove & RemoveItem.File) == RemoveItem.File)
+            await remover.RemoveFileAsync(_file.FullName);
+
+        if ((item.remove & RemoveItem.File1) == RemoveItem.File1)
+            await remover.RemoveFileAsync(_file1.FullName);
+
+        if ((item.remove & RemoveItem.File2) == RemoveItem.File2)
+            await remover.RemoveFileAsync(_file2.FullName);
+
+        await remover.RemoveEmptyDirsAsync(_tempDir.FullName);
+
+        Assert.That(_tempDir.Exists, Is.EqualTo((item.keep & KeepItem.TempDir) == KeepItem.TempDir));
+        Assert.That(_subDir1.Exists, Is.EqualTo((item.keep & KeepItem.SubDir1) == KeepItem.SubDir1));
+        Assert.That(_subDir2.Exists, Is.EqualTo((item.keep & KeepItem.SubDir2) == KeepItem.SubDir2));
     }
 
     private static IEnumerable<(RemoveItem remove, KeepItem keep)> TestItems()

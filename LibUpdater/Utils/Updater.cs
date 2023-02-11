@@ -157,13 +157,13 @@ public class Updater
     public async Task CleanupObsoleteItemsAsync(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
     {
         foreach (var obsoleteItem in obsoleteItems)
-            await _remover.RemoveAsync(
+            await _remover.RemoveFileAsync(
                 obsoleteItem.Path.AdjustParent(options.TargetDir).AdjustSeparator());
     }
 
     public void CleanupObsoleteItems(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
     {
-        foreach (var obsoleteItem in obsoleteItems) _remover.Remove(obsoleteItem.Path);
+        foreach (var obsoleteItem in obsoleteItems) _remover.RemoveFile(obsoleteItem.Path);
     }
 
     private static string CombineUrl(params string[] segments)

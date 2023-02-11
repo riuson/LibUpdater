@@ -346,7 +346,7 @@ internal class UpdaterTests
         };
 
         var removerMock = new Mock<IRemover>();
-        removerMock.Setup(mock => mock.Remove(It.IsAny<string>()))
+        removerMock.Setup(mock => mock.RemoveFile(It.IsAny<string>()))
             .Verifiable();
 
         var updater = new Updater(null, null, removerMock.Object);
@@ -357,9 +357,9 @@ internal class UpdaterTests
         updater.CleanupObsoleteItems(options, obsoleteItems);
 
         removerMock.Verify(t =>
-            t.Remove(@"C:\Windows\Temp\file1.txt".AdjustSeparator()));
+            t.RemoveFile(@"C:\Windows\Temp\file1.txt".AdjustSeparator()));
         removerMock.Verify(t =>
-            t.Remove(@"C:\Windows\Temp\dir\file2.txt".AdjustSeparator()));
+            t.RemoveFile(@"C:\Windows\Temp\dir\file2.txt".AdjustSeparator()));
     }
 
     [Test]
@@ -380,7 +380,7 @@ internal class UpdaterTests
         };
 
         var removerMock = new Mock<IRemover>();
-        removerMock.Setup(mock => mock.RemoveAsync(It.IsAny<string>()))
+        removerMock.Setup(mock => mock.RemoveFileAsync(It.IsAny<string>()))
             .Verifiable();
 
         var updater = new Updater(null, null, removerMock.Object);
@@ -391,9 +391,9 @@ internal class UpdaterTests
         await updater.CleanupObsoleteItemsAsync(options, obsoleteItems);
 
         removerMock.Verify(t =>
-            t.RemoveAsync(@"C:\Windows\Temp\file1.txt".AdjustSeparator()));
+            t.RemoveFileAsync(@"C:\Windows\Temp\file1.txt".AdjustSeparator()));
         removerMock.Verify(t =>
-            t.RemoveAsync(@"C:\Windows\Temp\dir\file2.txt".AdjustSeparator()));
+            t.RemoveFileAsync(@"C:\Windows\Temp\dir\file2.txt".AdjustSeparator()));
     }
 
     private static IEnumerable<string> TestJsonIndexResources()

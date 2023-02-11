@@ -6,10 +6,16 @@ public interface IRemover
 {
     /// <summary>
     ///     Remove file on path.
-    ///     If it was a last file, directory also removed.
     /// </summary>
     /// <param name="path">Path to file.</param>
-    void Remove(string path);
+    void RemoveFile(string path);
 
-    Task RemoveAsync(string path);
+    Task RemoveFileAsync(string path);
+
+    /// <summary>
+    /// Remove all empty subdirectories in directory specified by <paramref name="path"/>.
+    /// </summary>
+    /// <param name="path"></param>
+    void RemoveEmptyDirs(string path);
+    Task RemoveEmptyDirsAsync(string path);
 }
