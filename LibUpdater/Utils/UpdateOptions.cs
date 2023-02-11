@@ -1,4 +1,6 @@
-﻿namespace LibUpdater.Utils;
+﻿using System.Threading;
+
+namespace LibUpdater.Utils;
 
 public class UpdateOptions
 {
@@ -8,4 +10,5 @@ public class UpdateOptions
     public string VersionFile { get; set; } = "version.json";
     public string IndexFile { get; set; } = "index.json";
     public int DegreeOfParallelism { get; set; } = 1;
+    public CancellationToken Token { get; set; } = CancellationToken.None;
 }

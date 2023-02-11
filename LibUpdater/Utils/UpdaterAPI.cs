@@ -31,14 +31,17 @@ public class UpdaterAPI
         _remover = remover;
     }
 
-    public IActualVersionInfo GetActualVersion(UpdateOptions options)
+    public IActualVersionInfo GetActualVersion(
+        UpdateOptions options)
     {
         var versionUri = CombineUrl(options.UpdatesUri, options.VersionFile);
 
         try
         {
             _downloader.Progress += ProgressHandler;
-            var latestVersionJson = _downloader.DownloadString(versionUri);
+            var latestVersionJson = _downloader.DownloadString(
+                versionUri,
+                options.Token);
             var decoder = new JsonDecoder();
             return decoder.DecodeVersion(latestVersionJson);
         }
@@ -48,13 +51,16 @@ public class UpdaterAPI
         }
     }
 
-    public async Task<IActualVersionInfo> GetActualVersionAsync(UpdateOptions options)
+    public async Task<IActualVersionInfo> GetActualVersionAsync(
+        UpdateOptions options)
     {
         try
         {
             _downloader.Progress += ProgressHandler;
             var versionUri = CombineUrl(options.UpdatesUri, options.VersionFile);
-            var latestVersionJson = await _downloader.DownloadStringAsync(versionUri);
+            var latestVersionJson = await _downloader.DownloadStringAsync(
+                versionUri,
+                options.Token);
             var decoder = new JsonDecoder();
             return decoder.DecodeVersion(latestVersionJson);
         }
@@ -72,7 +78,9 @@ public class UpdaterAPI
         {
             _downloader.Progress += ProgressHandler;
             var indexUri = CombineUrl(options.UpdatesUri, path, options.IndexFile);
-            var indexJson = await _downloader.DownloadStringAsync(indexUri);
+            var indexJson = await _downloader.DownloadStringAsync(
+                indexUri,
+                options.Token);
             var decoder = new JsonDecoder();
             var result = decoder.DecodeIndex(indexJson);
             return result;
@@ -91,7 +99,9 @@ public class UpdaterAPI
         {
             _downloader.Progress += ProgressHandler;
             var indexUri = CombineUrl(options.UpdatesUri, path, options.IndexFile);
-            var indexJsonString = _downloader.DownloadString(indexUri);
+            var indexJsonString = _downloader.DownloadString(
+                indexUri,
+                options.Token);
             var decoder = new JsonDecoder();
             var result = decoder.DecodeIndex(indexJsonString);
             return result;
@@ -137,7 +147,11 @@ public class UpdaterAPI
                 .Distinct()
                 .AsParallel()
                 .WithDegreeOfParallelism(options.DegreeOfParallelism)
-                .ForAll(hash => _downloader.DownloadFile(archiveItemUri(hash), archiveItemPath(hash)));
+                .WithCancellation(options.Token)
+                .ForAll(hash => _downloader.DownloadFile(
+                    archiveItemUri(hash),
+                    archiveItemPath(hash),
+                    options.Token));
         }
         finally
         {
@@ -183,7 +197,8 @@ public class UpdaterAPI
                 options.DegreeOfParallelism,
                 hash => _downloader.DownloadFileAsync(
                     archiveItemUri(hash),
-                    archiveItemPath(hash)));
+                    archiveItemPath(hash),
+                    options.Token));
         }
         finally
         {
@@ -220,6 +235,8 @@ public class UpdaterAPI
 
         foreach (var archiveItem in archiveItems)
         {
+            options.Token.ThrowIfCancellationRequested();
+
             var targetPath = archiveItemTargetPath(archiveItem);
             var targetDir = Path.GetDirectoryName(targetPath);
 
@@ -268,6 +285,8 @@ public class UpdaterAPI
 
         foreach (var archiveItem in archiveItems)
         {
+            options.Token.ThrowIfCancellationRequested();
+
             var targetPath = archiveItemTargetPath(archiveItem);
             var targetDir = Path.GetDirectoryName(targetPath);
 
@@ -287,7 +306,9 @@ public class UpdaterAPI
         }
     }
 
-    public void CleanupObsoleteItems(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
+    public void CleanupObsoleteItems(
+        UpdateOptions options,
+        IEnumerable<IFileItem> obsoleteItems)
     {
         var totalCount = obsoleteItems.Count();
         var current = 0;
@@ -295,6 +316,8 @@ public class UpdaterAPI
 
         foreach (var obsoleteItem in obsoleteItems)
         {
+            options.Token.ThrowIfCancellationRequested();
+
             _remover.RemoveFile(
                 obsoleteItem.Path.AdjustParent(options.TargetDir).AdjustSeparator());
             current++;
@@ -304,7 +327,9 @@ public class UpdaterAPI
         _remover.RemoveEmptyDirs(options.TargetDir);
     }
 
-    public async Task CleanupObsoleteItemsAsync(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
+    public async Task CleanupObsoleteItemsAsync(
+        UpdateOptions options,
+        IEnumerable<IFileItem> obsoleteItems)
     {
         var totalCount = obsoleteItems.Count();
         var current = 0;
@@ -312,6 +337,8 @@ public class UpdaterAPI
 
         foreach (var obsoleteItem in obsoleteItems)
         {
+            options.Token.ThrowIfCancellationRequested();
+
             await _remover.RemoveFileAsync(
                 obsoleteItem.Path.AdjustParent(options.TargetDir).AdjustSeparator());
             current++;

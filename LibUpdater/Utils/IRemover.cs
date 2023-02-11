@@ -21,10 +21,10 @@ public interface IRemover
     Task RemoveEmptyDirsAsync(string path);
 
     /// <summary>
-    /// Remove all child files and subdirectories.
+    ///     Remove all child files and subdirectories.
     /// </summary>
     /// <param name="path">Path to root directory.</param>
     void RemoveChilds(string path);
-    
+
     Task RemoveChildsAsync(string path);
 }

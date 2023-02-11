@@ -29,7 +29,10 @@ public class Updater
         if (!await confirmIndex(indexItems)) return;
 
         var scanner = new TreeScanner();
-        var localItems = await scanner.ScanTreeAsync(options.TargetDir, options.DegreeOfParallelism);
+        var localItems = await scanner.ScanTreeAsync(
+            options.TargetDir,
+            options.Token,
+            options.DegreeOfParallelism);
 
         var analyzer = new TreeAnalyzer();
         var analysisResult = analyzer.Analyze(

@@ -19,7 +19,7 @@ internal class TreeScannerTests
     {
         var scanner = new TreeScanner();
 
-        var items = scanner.ScanTree(_samplesPath);
+        var items = scanner.ScanTree(_samplesPath, CancellationToken.None);
 
         Assert.That(items.Count(), Is.EqualTo(4));
         Assert.That(items.Any(x => x.Path.Contains(@"DirStruct\file.txt")), Is.True);
@@ -33,7 +33,7 @@ internal class TreeScannerTests
     {
         var scanner = new TreeScanner();
 
-        var items = await scanner.ScanTreeAsync(_samplesPath);
+        var items = await scanner.ScanTreeAsync(_samplesPath, CancellationToken.None);
 
         Assert.That(items.Count(), Is.EqualTo(4));
         Assert.That(items.Any(x => x.Path.Contains(@"DirStruct\file.txt")), Is.True);
@@ -47,7 +47,8 @@ internal class TreeScannerTests
     {
         var scanner = new TreeScanner();
 
-        var items = scanner.ScanTree(_samplesPath).Select(x => x.Path);
+        var items = scanner.ScanTree(_samplesPath, CancellationToken.None)
+            .Select(x => x.Path);
 
         var sortedItems = items.OrderBy(x => x);
 
@@ -59,7 +60,7 @@ internal class TreeScannerTests
     {
         var scanner = new TreeScanner();
 
-        var items = scanner.ScanTree(_samplesPath);
+        var items = scanner.ScanTree(_samplesPath, CancellationToken.None);
 
         Assert.That(items.All(x => x.Size == 1), Is.True);
     }
@@ -69,7 +70,7 @@ internal class TreeScannerTests
     {
         var scanner = new TreeScanner();
 
-        var items = await scanner.ScanTreeAsync(_samplesPath);
+        var items = await scanner.ScanTreeAsync(_samplesPath, CancellationToken.None);
 
         Assert.That(items.All(x => x.Size == 1), Is.True);
     }
@@ -80,7 +81,7 @@ internal class TreeScannerTests
         var scanner = new TreeScanner();
         var expectedHash = "356a192b7913b04c54574d18c28d46e6395428ab"; // File with content "1".
 
-        var items = scanner.ScanTree(_samplesPath);
+        var items = scanner.ScanTree(_samplesPath, CancellationToken.None);
 
         Assert.That(items.All(x => x.Hash == expectedHash), Is.True);
     }
@@ -91,7 +92,7 @@ internal class TreeScannerTests
         var scanner = new TreeScanner();
         var expectedHash = "356a192b7913b04c54574d18c28d46e6395428ab"; // File with content "1".
 
-        var items = await scanner.ScanTreeAsync(_samplesPath);
+        var items = await scanner.ScanTreeAsync(_samplesPath, CancellationToken.None);
 
         Assert.That(items.All(x => x.Hash == expectedHash), Is.True);
     }

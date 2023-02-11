@@ -24,7 +24,7 @@ internal class DownloaderTests
     {
         var downloader = new Downloader();
 
-        var value = downloader.DownloadString(uri);
+        var value = downloader.DownloadString(uri, CancellationToken.None);
 
         Assert.That(value.Contains(expectedValue), Is.True);
     }
@@ -34,7 +34,7 @@ internal class DownloaderTests
     {
         var downloader = new Downloader();
 
-        var value = await downloader.DownloadStringAsync(uri);
+        var value = await downloader.DownloadStringAsync(uri, CancellationToken.None);
 
         Assert.That(value.Contains(expectedValue), Is.True);
     }
@@ -44,7 +44,7 @@ internal class DownloaderTests
     {
         var downloader = new Downloader();
 
-        downloader.DownloadFile(uri, _tempFile);
+        downloader.DownloadFile(uri, _tempFile, CancellationToken.None);
 
         var value = File.ReadAllText(_tempFile);
 
@@ -58,7 +58,7 @@ internal class DownloaderTests
 
         File.WriteAllText(_tempFile, "some content");
 
-        downloader.DownloadFile(uri, _tempFile);
+        downloader.DownloadFile(uri, _tempFile, CancellationToken.None);
 
         var value = File.ReadAllText(_tempFile);
 

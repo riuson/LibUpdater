@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using LibUpdater.Data;
 
@@ -9,7 +10,7 @@ namespace LibUpdater.Utils;
 
 internal class Downloader : IDownloader
 {
-    public string DownloadString(string uri)
+    public string DownloadString(string uri, CancellationToken token)
     {
         using var client = new WebClient();
         using var stream = client.OpenRead(uri);
@@ -21,6 +22,8 @@ internal class Downloader : IDownloader
 
         while (true)
         {
+            token.ThrowIfCancellationRequested();
+
             var readed = streamReader.Read(buffer, 0, buffer.Length);
             totalReaded += readed;
 
@@ -37,7 +40,7 @@ internal class Downloader : IDownloader
         }
     }
 
-    public async Task<string> DownloadStringAsync(string uri)
+    public async Task<string> DownloadStringAsync(string uri, CancellationToken token)
     {
         using var client = new WebClient();
         using var stream = await client.OpenReadTaskAsync(uri);
@@ -49,6 +52,8 @@ internal class Downloader : IDownloader
 
         while (true)
         {
+            token.ThrowIfCancellationRequested();
+
             var readed = await streamReader.ReadBlockAsync(buffer, 0, buffer.Length);
             totalReaded += readed;
 
@@ -65,7 +70,7 @@ internal class Downloader : IDownloader
         }
     }
 
-    public void DownloadFile(string uri, string path, long size = -1)
+    public void DownloadFile(string uri, string path, CancellationToken token, long size = -1)
     {
         using var client = new WebClient();
         var webStream = client.OpenRead(uri);
@@ -76,6 +81,8 @@ internal class Downloader : IDownloader
 
         while (true)
         {
+            token.ThrowIfCancellationRequested();
+
             var readed = webStream.Read(buffer, 0, buffer.Length);
             totalReaded += readed;
 
@@ -92,7 +99,7 @@ internal class Downloader : IDownloader
         }
     }
 
-    public async Task DownloadFileAsync(string uri, string path, long size = -1)
+    public async Task DownloadFileAsync(string uri, string path, CancellationToken token, long size = -1)
     {
         using var client = new WebClient();
         var webStream = await client.OpenReadTaskAsync(uri);
@@ -103,6 +110,8 @@ internal class Downloader : IDownloader
 
         while (true)
         {
+            token.ThrowIfCancellationRequested();
+
             var readed = await webStream.ReadAsync(buffer, 0, buffer.Length);
             totalReaded += readed;
 

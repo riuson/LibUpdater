@@ -2,6 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using LibUpdater.Data;
 
@@ -9,7 +10,10 @@ namespace LibUpdater.Utils;
 
 internal class Hasher : IHasher
 {
-    public string HashStream(Stream stream, long length = -1)
+    public string HashStream(
+        Stream stream,
+        CancellationToken token,
+        long length = -1)
     {
         using var hashAlg = new SHA1Managed();
         var id = Guid.NewGuid();
@@ -19,6 +23,8 @@ internal class Hasher : IHasher
 
         while (true)
         {
+            token.ThrowIfCancellationRequested();
+
             var readed = stream.Read(buffer, 0, buffer.Length);
             totalReaded += readed;
 
@@ -37,7 +43,10 @@ internal class Hasher : IHasher
         }
     }
 
-    public async Task<string> HashStreamAsync(Stream stream, long length = -1)
+    public async Task<string> HashStreamAsync(
+        Stream stream,
+        CancellationToken token,
+        long length = -1)
     {
         using var hashAlg = new SHA1Managed();
         var id = Guid.NewGuid();
@@ -47,6 +56,8 @@ internal class Hasher : IHasher
 
         while (true)
         {
+            token.ThrowIfCancellationRequested();
+
             var readed = await stream.ReadAsync(buffer, 0, buffer.Length);
             totalReaded += readed;
 

@@ -10,7 +10,9 @@ internal class UpdaterAPITests
     public void GetLatestVersionShould()
     {
         var downloaderMock = new Mock<IDownloader>();
-        downloaderMock.Setup(mock => mock.DownloadString("https://localhost:81/version_file.json"))
+        downloaderMock.Setup(mock => mock.DownloadString(
+                "https://localhost:81/version_file.json",
+                CancellationToken.None))
             .Returns("{\"version\":\"1.2.3.4\",\"path\":\"somepath\",\"description\":\"desc\"}")
             .Verifiable();
 
@@ -25,14 +27,18 @@ internal class UpdaterAPITests
         Assert.That(versionInfo.Version, Is.EqualTo(new Version(1, 2, 3, 4)));
         Assert.That(versionInfo.Path, Is.EqualTo("somepath"));
         Assert.That(versionInfo.Description, Is.EqualTo("desc"));
-        downloaderMock.Verify(t => t.DownloadString("https://localhost:81/version_file.json"));
+        downloaderMock.Verify(t => t.DownloadString(
+            "https://localhost:81/version_file.json",
+            CancellationToken.None));
     }
 
     [Test]
     public async Task GetLatestVersionAsyncShould()
     {
         var downloaderMock = new Mock<IDownloader>();
-        downloaderMock.Setup(mock => mock.DownloadStringAsync("https://localhost:81/version_file.json"))
+        downloaderMock.Setup(mock => mock.DownloadStringAsync(
+                "https://localhost:81/version_file.json",
+                CancellationToken.None))
             .Returns(Task.FromResult("{\"version\":\"1.2.3.4\",\"path\":\"somepath\",\"description\":\"desc\"}"))
             .Verifiable();
 
@@ -47,7 +53,9 @@ internal class UpdaterAPITests
         Assert.That(versionInfo.Version, Is.EqualTo(new Version(1, 2, 3, 4)));
         Assert.That(versionInfo.Path, Is.EqualTo("somepath"));
         Assert.That(versionInfo.Description, Is.EqualTo("desc"));
-        downloaderMock.Verify(t => t.DownloadStringAsync("https://localhost:81/version_file.json"));
+        downloaderMock.Verify(t => t.DownloadStringAsync(
+            "https://localhost:81/version_file.json",
+            CancellationToken.None));
     }
 
     [TestCaseSource(nameof(TestJsonIndexResources))]
@@ -56,7 +64,9 @@ internal class UpdaterAPITests
         var json = AssemblyExtension.ReadResource(jsonIndexResource);
 
         var downloaderMock = new Mock<IDownloader>();
-        downloaderMock.Setup(mock => mock.DownloadString("https://localhost/version2/index_file.json"))
+        downloaderMock.Setup(mock => mock.DownloadString(
+                "https://localhost/version2/index_file.json",
+                CancellationToken.None))
             .Returns(json)
             .Verifiable();
 
@@ -68,7 +78,9 @@ internal class UpdaterAPITests
 
         var archiveItems = updater.GetIndex(options, "version2");
 
-        downloaderMock.Verify(t => t.DownloadString("https://localhost/version2/index_file.json"));
+        downloaderMock.Verify(t => t.DownloadString(
+            "https://localhost/version2/index_file.json",
+            CancellationToken.None));
 
         Assert.That(archiveItems.Count(), Is.EqualTo(4));
 
@@ -91,7 +103,9 @@ internal class UpdaterAPITests
         var json = AssemblyExtension.ReadResource(jsonIndexResource);
 
         var downloaderMock = new Mock<IDownloader>();
-        downloaderMock.Setup(mock => mock.DownloadStringAsync("https://localhost/version2/index_file.json"))
+        downloaderMock.Setup(mock => mock.DownloadStringAsync(
+                "https://localhost/version2/index_file.json",
+                CancellationToken.None))
             .Returns(Task.FromResult(json))
             .Verifiable();
 
@@ -103,7 +117,9 @@ internal class UpdaterAPITests
 
         var archiveItems = await updater.GetIndexAsync(options, "version2");
 
-        downloaderMock.Verify(t => t.DownloadStringAsync("https://localhost/version2/index_file.json"));
+        downloaderMock.Verify(t => t.DownloadStringAsync(
+            "https://localhost/version2/index_file.json",
+            CancellationToken.None));
 
         Assert.That(archiveItems.Count(), Is.EqualTo(4));
 
@@ -138,7 +154,8 @@ internal class UpdaterAPITests
         };
 
         var downloaderMock = new Mock<IDownloader>();
-        downloaderMock.Setup(mock => mock.DownloadFile(It.IsAny<string>(), It.IsAny<string>(), -1))
+        downloaderMock.Setup(mock => mock.DownloadFile(
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>(), -1))
             .Verifiable();
 
         var updater = new UpdaterAPI(downloaderMock.Object, null, null);
@@ -151,9 +168,17 @@ internal class UpdaterAPITests
         updater.GetArchiveItems(options, "version1", archiveItems);
 
         downloaderMock.Verify(t =>
-            t.DownloadFile("https://localhost/version1/1234", Path.Combine(options.TempDir, "1234"), -1));
+            t.DownloadFile(
+                "https://localhost/version1/1234",
+                Path.Combine(options.TempDir, "1234"),
+                CancellationToken.None,
+                -1));
         downloaderMock.Verify(t =>
-            t.DownloadFile("https://localhost/version1/123456", Path.Combine(options.TempDir, "123456"), -1));
+            t.DownloadFile(
+                "https://localhost/version1/123456",
+                Path.Combine(options.TempDir, "123456"),
+                CancellationToken.None,
+                -1));
     }
 
     [Test]
@@ -174,7 +199,11 @@ internal class UpdaterAPITests
         };
 
         var downloaderMock = new Mock<IDownloader>();
-        downloaderMock.Setup(mock => mock.DownloadFileAsync(It.IsAny<string>(), It.IsAny<string>(), -1))
+        downloaderMock.Setup(mock => mock.DownloadFileAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                CancellationToken.None,
+                -1))
             .Verifiable();
 
         var updater = new UpdaterAPI(downloaderMock.Object, null, null);
@@ -187,9 +216,17 @@ internal class UpdaterAPITests
         await updater.GetArchiveItemsAsync(options, "version1", archiveItems);
 
         downloaderMock.Verify(t =>
-            t.DownloadFileAsync("https://localhost/version1/1234", Path.Combine(options.TempDir, "1234"), -1));
+            t.DownloadFileAsync(
+                "https://localhost/version1/1234",
+                Path.Combine(options.TempDir, "1234"),
+                CancellationToken.None,
+                -1));
         downloaderMock.Verify(t =>
-            t.DownloadFileAsync("https://localhost/version1/123456", Path.Combine(options.TempDir, "123456"), -1));
+            t.DownloadFileAsync(
+                "https://localhost/version1/123456",
+                Path.Combine(options.TempDir, "123456"),
+                CancellationToken.None,
+                -1));
     }
 
     [Test]
@@ -225,7 +262,11 @@ internal class UpdaterAPITests
         };
 
         var downloaderMock = new Mock<IDownloader>();
-        downloaderMock.Setup(mock => mock.DownloadFile(It.IsAny<string>(), It.IsAny<string>(), -1))
+        downloaderMock.Setup(mock => mock.DownloadFile(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>(),
+                -1))
             .Verifiable();
 
         var updater = new UpdaterAPI(downloaderMock.Object, null, null);
@@ -238,13 +279,25 @@ internal class UpdaterAPITests
         updater.GetArchiveItems(options, "version1", archiveItems);
 
         downloaderMock.Verify(t =>
-                t.DownloadFile("https://localhost/version1/1234", Path.Combine(options.TempDir, "1234"), -1),
+                t.DownloadFile(
+                    "https://localhost/version1/1234",
+                    Path.Combine(options.TempDir, "1234"),
+                    CancellationToken.None,
+                    -1),
             Times.Once);
         downloaderMock.Verify(t =>
-                t.DownloadFile("https://localhost/version1/123456", Path.Combine(options.TempDir, "123456"), -1),
+                t.DownloadFile(
+                    "https://localhost/version1/123456",
+                    Path.Combine(options.TempDir, "123456"),
+                    CancellationToken.None,
+                    -1),
             Times.Once);
         downloaderMock.Verify(t =>
-                t.DownloadFile("https://localhost/version1/12345678", Path.Combine(options.TempDir, "12345678"), -1),
+                t.DownloadFile(
+                    "https://localhost/version1/12345678",
+                    Path.Combine(options.TempDir, "12345678"),
+                    CancellationToken.None,
+                    -1),
             Times.Once);
     }
 
@@ -266,7 +319,9 @@ internal class UpdaterAPITests
         };
 
         var unpackerMock = new Mock<IUnpacker>();
-        unpackerMock.Setup(mock => mock.Unpack(It.IsAny<string>(), It.IsAny<string>()))
+        unpackerMock.Setup(mock => mock.Unpack(
+                It.IsAny<string>(),
+                It.IsAny<string>()))
             .Verifiable();
 
         var updater = new UpdaterAPI(null, unpackerMock.Object, null);

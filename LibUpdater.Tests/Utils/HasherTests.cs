@@ -11,7 +11,7 @@ internal class HasherTests
         var hasher = new Hasher();
         var resourceStream = AssemblyExtension.GetEmbeddedResource(testItem.resourceName);
 
-        var hash = hasher.HashStream(resourceStream);
+        var hash = hasher.HashStream(resourceStream, CancellationToken.None);
 
         Assert.That(hash, Is.EqualTo(testItem.hash));
     }
@@ -22,7 +22,7 @@ internal class HasherTests
         var hasher = new Hasher();
         var resourceStream = AssemblyExtension.GetEmbeddedResource(testItem.resourceName);
 
-        var hash = await hasher.HashStreamAsync(resourceStream);
+        var hash = await hasher.HashStreamAsync(resourceStream, CancellationToken.None);
 
         Assert.That(hash, Is.EqualTo(testItem.hash));
     }
