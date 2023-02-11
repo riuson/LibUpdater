@@ -348,6 +348,8 @@ internal class UpdaterTests
         var removerMock = new Mock<IRemover>();
         removerMock.Setup(mock => mock.RemoveFile(It.IsAny<string>()))
             .Verifiable();
+        removerMock.Setup(mock => mock.RemoveEmptyDirs(It.IsAny<string>()))
+            .Verifiable();
 
         var updater = new Updater(null, null, removerMock.Object);
 
@@ -360,6 +362,8 @@ internal class UpdaterTests
             t.RemoveFile(@"C:\Windows\Temp\file1.txt".AdjustSeparator()));
         removerMock.Verify(t =>
             t.RemoveFile(@"C:\Windows\Temp\dir\file2.txt".AdjustSeparator()));
+        removerMock.Verify(t =>
+            t.RemoveEmptyDirs(options.TargetDir));
     }
 
     [Test]
@@ -382,6 +386,8 @@ internal class UpdaterTests
         var removerMock = new Mock<IRemover>();
         removerMock.Setup(mock => mock.RemoveFileAsync(It.IsAny<string>()))
             .Verifiable();
+        removerMock.Setup(mock => mock.RemoveEmptyDirsAsync(It.IsAny<string>()))
+            .Verifiable();
 
         var updater = new Updater(null, null, removerMock.Object);
 
@@ -394,6 +400,8 @@ internal class UpdaterTests
             t.RemoveFileAsync(@"C:\Windows\Temp\file1.txt".AdjustSeparator()));
         removerMock.Verify(t =>
             t.RemoveFileAsync(@"C:\Windows\Temp\dir\file2.txt".AdjustSeparator()));
+        removerMock.Verify(t =>
+            t.RemoveEmptyDirsAsync(options.TargetDir));
     }
 
     private static IEnumerable<string> TestJsonIndexResources()

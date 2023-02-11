@@ -154,16 +154,22 @@ public class Updater
         }
     }
 
+    public void CleanupObsoleteItems(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
+    {
+        foreach (var obsoleteItem in obsoleteItems)
+            _remover.RemoveFile(
+                obsoleteItem.Path.AdjustParent(options.TargetDir).AdjustSeparator());
+
+        _remover.RemoveEmptyDirs(options.TargetDir);
+    }
+
     public async Task CleanupObsoleteItemsAsync(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
     {
         foreach (var obsoleteItem in obsoleteItems)
             await _remover.RemoveFileAsync(
                 obsoleteItem.Path.AdjustParent(options.TargetDir).AdjustSeparator());
-    }
 
-    public void CleanupObsoleteItems(UpdateOptions options, IEnumerable<IFileItem> obsoleteItems)
-    {
-        foreach (var obsoleteItem in obsoleteItems) _remover.RemoveFile(obsoleteItem.Path);
+        await _remover.RemoveEmptyDirsAsync(options.TargetDir);
     }
 
     private static string CombineUrl(params string[] segments)
