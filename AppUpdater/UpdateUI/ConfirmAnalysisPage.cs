@@ -2,18 +2,10 @@
 
 namespace AppUpdater.UpdateUI;
 
-public class ConfirmAnalysisPage : TaskDialogPage
+public class ConfirmAnalysisPage : TaskDialogPageWithConfirmation
 {
-    public ConfirmAnalysisPage(
-        IAnalysisResult analysisResult,
-        EventHandler continueHandler,
-        EventHandler cancelHandler)
+    public ConfirmAnalysisPage(IAnalysisResult analysisResult)
     {
-        ButtonContinue = new TaskDialogButton("Продолжить", true, false);
-        ButtonCancel = new TaskDialogButton("Отменить");
-        ButtonContinue.Click += continueHandler;
-        ButtonCancel.Click += cancelHandler;
-
         AllowCancel = true;
         AllowMinimize = false;
         Buttons = new TaskDialogButtonCollection { ButtonContinue, ButtonCancel };
@@ -42,7 +34,4 @@ public class ConfirmAnalysisPage : TaskDialogPage
         Heading = $"Потребуется загрузить {analysisResult.BytesToDownload:n0} байт.";
         Icon = TaskDialogIcon.Information;
     }
-
-    public TaskDialogButton ButtonContinue { get; }
-    public TaskDialogButton ButtonCancel { get; }
 }

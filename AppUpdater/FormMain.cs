@@ -55,26 +55,13 @@ public partial class FormMain : Form
         };
         var updater = new Updater();
 
-        var updateInitialPage = new InitialPage();
+        var updateRequestingServerPage = new RequestingIndexPage();
 
-        TaskDialogPage currentPage = updateInitialPage;
+        TaskDialogPage currentPage = updateRequestingServerPage;
 
         async Task<bool> confirmVersion(IActualVersionInfo versionInfo)
         {
-            var confirm = false;
-            var semaphoreConfirm = new SemaphoreSlim(0, 1);
-            var updateConfirmVersionPage = new ConfirmVersionPage(
-                versionInfo,
-                (o, args) =>
-                {
-                    confirm = true;
-                    semaphoreConfirm.Release();
-                },
-                (o, args) =>
-                {
-                    token.Cancel();
-                    semaphoreConfirm.Release();
-                });
+            var updateConfirmVersionPage = new ConfirmVersionPage(versionInfo);
 
 
 #if DEBUG
@@ -85,63 +72,35 @@ public partial class FormMain : Form
             currentPage.Navigate(updateConfirmVersionPage);
             currentPage = updateConfirmVersionPage;
 
-            await semaphoreConfirm.WaitAsync();
+            await updateConfirmVersionPage.WaitDecisionAsync();
 
-            var updateRequestingIndexPage = new RequestingIndexPage();
-
-            currentPage.Navigate(updateRequestingIndexPage);
-            currentPage = updateRequestingIndexPage;
+            currentPage.Navigate(updateRequestingServerPage);
+            currentPage = updateRequestingServerPage;
 
 #if DEBUG
             // To illustrate the process.
             await Task.Delay(2000);
 #endif
 
-            return confirm;
+            return updateConfirmVersionPage.Confirm;
         }
 
         async Task<bool> confirmIndex(IEnumerable<IArchiveItem> archiveItems)
         {
-            var confirm = false;
-            var semaphoreConfirm = new SemaphoreSlim(0, 1);
-            var updateConfirmIndexPage = new ConfirmIndexPage(
-                (o, args) =>
-                {
-                    confirm = true;
-                    semaphoreConfirm.Release();
-                },
-                (o, args) =>
-                {
-                    token.Cancel();
-                    semaphoreConfirm.Release();
-                }
-            );
+            var updateConfirmIndexPage = new ConfirmIndexPage();
             currentPage.Navigate(updateConfirmIndexPage);
             currentPage = updateConfirmIndexPage;
-            await semaphoreConfirm.WaitAsync();
-
-            return confirm;
+            await updateConfirmIndexPage.WaitDecisionAsync();
+            return updateConfirmIndexPage.Confirm;
         }
 
         async Task<bool> confirmAnalysis(IAnalysisResult analysisResult)
         {
-            var confirm = false;
-            var semaphoreConfirm = new SemaphoreSlim(0, 1);
             var updateConfirmAnalysisPage = new ConfirmAnalysisPage(
-                analysisResult,
-                (o, args) =>
-                {
-                    confirm = true;
-                    semaphoreConfirm.Release();
-                },
-                (o, args) =>
-                {
-                    token.Cancel();
-                    semaphoreConfirm.Release();
-                });
+                analysisResult);
             currentPage.Navigate(updateConfirmAnalysisPage);
             currentPage = updateConfirmAnalysisPage;
-            await semaphoreConfirm.WaitAsync();
+            await updateConfirmAnalysisPage.WaitDecisionAsync();
 
             var updateDownloadingArchivesPage = new DownloadingArchivesPage();
             updater.Progress += updateDownloadingArchivesPage.ProgressHandler;
@@ -149,37 +108,25 @@ public partial class FormMain : Form
             currentPage.Navigate(updateDownloadingArchivesPage);
             currentPage = updateDownloadingArchivesPage;
 
-            return confirm;
+            return updateConfirmAnalysisPage.Confirm;
         }
 
         async Task<bool> confirmApply(IAnalysisResult analysisResult)
         {
-            var confirm = false;
-            var semaphoreConfirm = new SemaphoreSlim(0, 1);
-            var confirmInstallPage = new ConfirmInstallPage(
-                (o, args) =>
-                {
-                    confirm = true;
-                    semaphoreConfirm.Release();
-                },
-                (o, args) =>
-                {
-                    token.Cancel();
-                    semaphoreConfirm.Release();
-                });
+            var confirmInstallPage = new ConfirmInstallPage();
             currentPage.Navigate(confirmInstallPage);
             currentPage = confirmInstallPage;
-            await semaphoreConfirm.WaitAsync();
+            await confirmInstallPage.WaitDecisionAsync();
 
 
-            var updateApplyChangesPage = new ApplyChangesPage();
+            var updateApplyChangesPage = new InstallingUpdatesPage();
             updater.Progress += updateApplyChangesPage.ProgressHandler;
 
             currentPage.Navigate(updateApplyChangesPage);
             currentPage = updateApplyChangesPage;
 
 
-            return confirm;
+            return confirmInstallPage.Confirm;
         }
 
         async Task confirmComplete()
@@ -200,7 +147,7 @@ public partial class FormMain : Form
             confirmApply,
             confirmComplete);
 
-        TaskDialog.ShowDialog(this, updateInitialPage);
+        TaskDialog.ShowDialog(this, updateRequestingServerPage);
 
         await taskUpdate;
 

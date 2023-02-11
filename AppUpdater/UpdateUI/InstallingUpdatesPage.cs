@@ -2,11 +2,11 @@
 
 namespace AppUpdater.UpdateUI;
 
-public class ApplyChangesPage : TaskDialogPage
+public class InstallingUpdatesPage : TaskDialogPage
 {
     private readonly IProgress<ProgressEventArgs> _progress;
 
-    public ApplyChangesPage()
+    public InstallingUpdatesPage()
     {
         AllowCancel = true;
         AllowMinimize = false;
