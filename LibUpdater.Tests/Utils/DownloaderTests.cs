@@ -2,6 +2,7 @@
 
 namespace LibUpdater.Tests.Utils;
 
+[Ignore("Requires server")]
 internal class DownloaderTests
 {
     private string _tempFile;
@@ -18,30 +19,27 @@ internal class DownloaderTests
         File.Delete(_tempFile);
     }
 
-    [Ignore("Requires server")]
-    [TestCase("https://updates1.riuson.com/version.txt", "ver1")]
+    [TestCase("https://updates1.riuson.com/version.json", "0.1.0.0")]
     public void DownloadStringShouldGetString(string uri, string expectedValue)
     {
         var downloader = new Downloader();
 
         var value = downloader.DownloadString(uri);
 
-        Assert.That(value.Trim(), Is.EqualTo(expectedValue.Trim()));
+        Assert.That(value.Contains(expectedValue), Is.True);
     }
 
-    [Ignore("Requires server")]
-    [TestCase("https://updates1.riuson.com/version.txt", "ver1")]
+    [TestCase("https://updates1.riuson.com/version.json", "0.1.0.0")]
     public async Task DownloadStringShouldGetStringAsync(string uri, string expectedValue)
     {
         var downloader = new Downloader();
 
         var value = await downloader.DownloadStringAsync(uri);
 
-        Assert.That(value.Trim(), Is.EqualTo(expectedValue.Trim()));
+        Assert.That(value.Contains(expectedValue), Is.True);
     }
 
-    [Ignore("Requires server")]
-    [TestCase("https://updates1.riuson.com/version.txt", "ver1")]
+    [TestCase("https://updates1.riuson.com/version.json", "0.1.0.0")]
     public void DownloadFileShouldGetFile(string uri, string expectedValue)
     {
         var downloader = new Downloader();
@@ -50,11 +48,10 @@ internal class DownloaderTests
 
         var value = File.ReadAllText(_tempFile);
 
-        Assert.That(value.Trim(), Is.EqualTo(expectedValue.Trim()));
+        Assert.That(value.Contains(expectedValue), Is.True);
     }
 
-    [Ignore("Requires server")]
-    [TestCase("https://updates1.riuson.com/version.txt", "ver1")]
+    [TestCase("https://updates1.riuson.com/version.json", "0.1.0.0")]
     public void DownloadFileShouldOverwriteFile(string uri, string expectedValue)
     {
         var downloader = new Downloader();
@@ -65,6 +62,6 @@ internal class DownloaderTests
 
         var value = File.ReadAllText(_tempFile);
 
-        Assert.That(value.Trim(), Is.EqualTo(expectedValue.Trim()));
+        Assert.That(value.Contains(expectedValue), Is.True);
     }
 }

@@ -87,6 +87,7 @@ internal class Downloader : IDownloader
             else
             {
                 ReportProgress(totalReaded, size, id);
+                break;
             }
         }
     }
@@ -113,6 +114,7 @@ internal class Downloader : IDownloader
             else
             {
                 ReportProgress(totalReaded, size, id);
+                break;
             }
         }
     }
