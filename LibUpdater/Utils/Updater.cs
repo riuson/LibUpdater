@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using LibUpdater.Data;
 
@@ -88,12 +89,40 @@ public class Updater
             .ForAll(hash => _downloader.DownloadFile(archiveItemUri(hash), archiveItemPath(hash)));
     }
 
-    public Task GetArchiveItemsAsync(
+    public async Task GetArchiveItemsAsync(
         UpdateOptions options,
         string version,
         IEnumerable<IArchiveItem> archiveItems)
     {
-        return Task.Run(() => GetArchiveItems(options, version, archiveItems));
+        string archiveItemUri(string hash)
+        {
+            return CombineUrl(options.UpdatesUri, version, hash);
+        }
+
+        string archiveItemPath(string hash)
+        {
+            return Path.Combine(options.TempDir, hash);
+        }
+
+        var uniqueHashes = archiveItems
+            .Select(x => x.Hash)
+            .Distinct();
+
+        using var semaphore = new SemaphoreSlim(options.DegreeOfParallelism, options.DegreeOfParallelism);
+        var tasks = uniqueHashes.Select(async hash =>
+        {
+            await semaphore.WaitAsync();
+            try
+            {
+                await _downloader.DownloadFileAsync(archiveItemUri(hash), archiveItemPath(hash));
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        });
+
+        await Task.WhenAll(tasks);
     }
 
     public void ApplyArchiveItems(
