@@ -15,18 +15,28 @@ public class Updater
         Func<IEnumerable<IArchiveItem>, Task<bool>> confirmIndex,
         Func<IAnalysisResult, Task<bool>> confirmAnalysis,
         Func<IAnalysisResult, Task<bool>> confirmApply,
-        Func<Task> confirmComplete)
+        Func<Task> notifyComplete,
+        Func<Task> notifyCancel,
+        Func<Task> notifyNoChanges)
     {
         var api = new UpdaterAPI();
         api.Progress += OnProgress;
 
         var versionInfo = await api.GetActualVersionAsync(options);
 
-        if (!await confirmVersion(versionInfo)) return;
+        if (!await confirmVersion(versionInfo))
+        {
+            await notifyCancel();
+            return;
+        }
 
         var indexItems = await api.GetIndexAsync(options, versionInfo.Path);
 
-        if (!await confirmIndex(indexItems)) return;
+        if (!await confirmIndex(indexItems))
+        {
+            await notifyCancel(); 
+            return;
+        }
 
         var scanner = new TreeScanner();
         var localItems = await scanner.ScanTreeAsync(
@@ -40,20 +50,35 @@ public class Updater
             localItems,
             indexItems);
 
-        if (!await confirmAnalysis(analysisResult)) return;
+        if (!analysisResult.IsEquals)
+        {
+            if (!await confirmAnalysis(analysisResult))
+            {
+                await notifyCancel(); 
+                return;
+            }
 
-        await api.GetArchiveItemsAsync(options, versionInfo.Path, analysisResult.Added);
+            await api.GetArchiveItemsAsync(options, versionInfo.Path, analysisResult.Added);
 
-        if (!await confirmApply(analysisResult)) return;
+            if (!await confirmApply(analysisResult))
+            {
+                await notifyCancel(); 
+                return;
+            }
 
-        await api.CleanupObsoleteItemsAsync(options, analysisResult.Obsolete);
+            await api.CleanupObsoleteItemsAsync(options, analysisResult.Obsolete);
 
-        await api.ApplyArchiveItemsAsync(options, analysisResult.Added);
+            await api.ApplyArchiveItemsAsync(options, analysisResult.Added);
 
-        var remover = new Remover();
-        await remover.RemoveChildsAsync(options.TempDir);
+            var remover = new Remover();
+            await remover.RemoveChildsAsync(options.TempDir);
+        }
+        else
+        {
+            await notifyNoChanges();
+        }
 
-        await confirmComplete();
+        await notifyComplete();
 
         api.Progress -= OnProgress;
     }

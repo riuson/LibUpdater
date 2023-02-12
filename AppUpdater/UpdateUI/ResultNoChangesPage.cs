@@ -1,15 +1,14 @@
 ﻿namespace AppUpdater.UpdateUI;
 
-public class CompletedPage : TaskDialogPage
+public class ResultNoChangesPage : TaskDialogPage
 {
-    public CompletedPage()
+    public ResultNoChangesPage()
     {
         AllowCancel = true;
         AllowMinimize = false;
         Buttons = new TaskDialogButtonCollection { TaskDialogButton.OK };
-        Caption = "Обновление";
         DefaultButton = TaskDialogButton.OK;
-        Heading = "Установка обновлений завершена.";
+        Heading = "Обновление не требуется.";
         Icon = TaskDialogIcon.Information;
     }
 }

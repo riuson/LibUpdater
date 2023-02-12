@@ -1,14 +1,10 @@
 ﻿namespace AppUpdater.UpdateUI;
 
-public class ConfirmIndexPage : TaskDialogPageWithConfirmation
+public class ConfirmIndexPage : ConfirmableTaskDialogPage
 {
     public ConfirmIndexPage()
     {
-        AllowCancel = true;
-        AllowMinimize = false;
-        Buttons = new TaskDialogButtonCollection { ButtonContinue, ButtonCancel };
-        Caption = "Обновление";
-        DefaultButton = ButtonContinue;
+        DefaultButton = _buttonContinue;
         Heading = "Получен перечень файлов с сервера.\nТребуется сравнить с локальными файлами.";
         Icon = TaskDialogIcon.Information;
     }

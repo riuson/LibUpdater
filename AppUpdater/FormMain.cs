@@ -61,37 +61,42 @@ public partial class FormMain : Form
 
         async Task<bool> confirmVersion(IActualVersionInfo versionInfo)
         {
+            var decision =
+                await updateRequestingServerPage.WaitDecisionAsync(
+                    2000);
+
+            if (decision == UserDecisions.Cancel) return false;
+
             var updateConfirmVersionPage = new ConfirmVersionPage(versionInfo);
 
-
-#if DEBUG
-            // To illustrate the process.
-            await Task.Delay(2000);
-#endif
 
             currentPage.Navigate(updateConfirmVersionPage);
             currentPage = updateConfirmVersionPage;
 
-            await updateConfirmVersionPage.WaitDecisionAsync();
+            decision = await updateConfirmVersionPage.WaitDecisionAsync();
 
+            if (decision != UserDecisions.Continue) return false;
+
+            updateRequestingServerPage = new RequestingIndexPage();
             currentPage.Navigate(updateRequestingServerPage);
             currentPage = updateRequestingServerPage;
 
-#if DEBUG
-            // To illustrate the process.
-            await Task.Delay(2000);
-#endif
-
-            return updateConfirmVersionPage.Confirm;
+            return true;
         }
 
         async Task<bool> confirmIndex(IEnumerable<IArchiveItem> archiveItems)
         {
+            var decision =
+                await updateRequestingServerPage.WaitDecisionAsync(
+                    2000);
+
+            if (decision == UserDecisions.Cancel) return false;
+
             var updateConfirmIndexPage = new ConfirmIndexPage();
             currentPage.Navigate(updateConfirmIndexPage);
             currentPage = updateConfirmIndexPage;
-            await updateConfirmIndexPage.WaitDecisionAsync();
-            return updateConfirmIndexPage.Confirm;
+            decision = await updateConfirmIndexPage.WaitDecisionAsync();
+            return decision == UserDecisions.Continue;
         }
 
         async Task<bool> confirmAnalysis(IAnalysisResult analysisResult)
@@ -100,7 +105,9 @@ public partial class FormMain : Form
                 analysisResult);
             currentPage.Navigate(updateConfirmAnalysisPage);
             currentPage = updateConfirmAnalysisPage;
-            await updateConfirmAnalysisPage.WaitDecisionAsync();
+            var decision = await updateConfirmAnalysisPage.WaitDecisionAsync();
+
+            if (decision != UserDecisions.Continue) return false;
 
             var updateDownloadingArchivesPage = new DownloadingArchivesPage();
             updater.Progress += updateDownloadingArchivesPage.ProgressHandler;
@@ -108,16 +115,19 @@ public partial class FormMain : Form
             currentPage.Navigate(updateDownloadingArchivesPage);
             currentPage = updateDownloadingArchivesPage;
 
-            return updateConfirmAnalysisPage.Confirm;
+            return true;
         }
 
         async Task<bool> confirmApply(IAnalysisResult analysisResult)
         {
+            if (currentPage.BoundDialog is null) return false;
+
             var confirmInstallPage = new ConfirmInstallPage();
             currentPage.Navigate(confirmInstallPage);
             currentPage = confirmInstallPage;
-            await confirmInstallPage.WaitDecisionAsync();
+            var decision = await confirmInstallPage.WaitDecisionAsync();
 
+            if (decision != UserDecisions.Continue) return false;
 
             var updateApplyChangesPage = new InstallingUpdatesPage();
             updater.Progress += updateApplyChangesPage.ProgressHandler;
@@ -126,17 +136,43 @@ public partial class FormMain : Form
             currentPage = updateApplyChangesPage;
 
 
-            return confirmInstallPage.Confirm;
+            return true;
         }
 
-        async Task confirmComplete()
+        async Task notifyComplete()
         {
-            var updateCompletePage = new CompletedPage();
+            if (currentPage.BoundDialog is null) return;
+
+            var updateCompletePage = new ResultCompletedPage();
 
             currentPage.Navigate(updateCompletePage);
             currentPage = updateCompletePage;
 
             await Task.Delay(1);
+        }
+
+        async Task notifyNoChanges()
+        {
+            if (currentPage.BoundDialog is null) return;
+
+            var updateNoChangesPage = new ResultNoChangesPage();
+
+            currentPage.Navigate(updateNoChangesPage);
+            currentPage = updateNoChangesPage;
+
+            await Task.Delay(1);
+        }
+
+        async Task notifyCancel()
+        {
+            if (currentPage.BoundDialog is null) return;
+
+            var updateCancelPage = new ResultCancelledPage();
+
+            currentPage.Navigate(updateCancelPage);
+            currentPage = updateCancelPage;
+
+            await Task.Delay(1000);
         }
 
         var taskUpdate = updater.Update(
@@ -145,7 +181,9 @@ public partial class FormMain : Form
             confirmIndex,
             confirmAnalysis,
             confirmApply,
-            confirmComplete);
+            notifyComplete,
+            notifyCancel,
+            notifyNoChanges);
 
         TaskDialog.ShowDialog(this, updateRequestingServerPage);
 

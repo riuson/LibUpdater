@@ -2,17 +2,12 @@
 
 namespace AppUpdater.UpdateUI;
 
-public class DownloadingArchivesPage : TaskDialogPage
+public class DownloadingArchivesPage : CancellableTaskDialogPage
 {
     private readonly IProgress<ProgressEventArgs> _progress;
 
     public DownloadingArchivesPage()
     {
-        AllowCancel = true;
-        AllowMinimize = false;
-        Buttons = new TaskDialogButtonCollection { TaskDialogButton.Cancel };
-        Caption = "Обновление";
-        DefaultButton = TaskDialogButton.Cancel;
         Heading = "Производится загрузка обновлений...";
         Icon = TaskDialogIcon.Information;
         ProgressBar = new TaskDialogProgressBar

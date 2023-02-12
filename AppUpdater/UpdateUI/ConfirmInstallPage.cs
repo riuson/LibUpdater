@@ -1,15 +1,11 @@
 ﻿namespace AppUpdater.UpdateUI;
 
-public class ConfirmInstallPage : TaskDialogPageWithConfirmation
+public class ConfirmInstallPage : ConfirmableTaskDialogPage
 {
     public ConfirmInstallPage()
     {
-        AllowCancel = true;
-        AllowMinimize = false;
-        Buttons = new TaskDialogButtonCollection { ButtonContinue, ButtonCancel };
-        Caption = "Обновление";
-        DefaultButton = ButtonContinue;
-        Heading = "Далее будет произведена установка обновления.\nОтменить процесс будет невозможно.";
+        Heading = "Всё готово для установки обновления.";
+        Footnote = "Отменить процесс будет невозможно!";
         Icon = TaskDialogIcon.Warning;
     }
 }

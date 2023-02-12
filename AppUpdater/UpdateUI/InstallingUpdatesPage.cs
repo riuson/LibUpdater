@@ -2,17 +2,12 @@
 
 namespace AppUpdater.UpdateUI;
 
-public class InstallingUpdatesPage : TaskDialogPage
+public class InstallingUpdatesPage : CancellableTaskDialogPage
 {
     private readonly IProgress<ProgressEventArgs> _progress;
 
     public InstallingUpdatesPage()
     {
-        AllowCancel = true;
-        AllowMinimize = false;
-        Buttons = new TaskDialogButtonCollection { TaskDialogButton.Cancel };
-        Caption = "Обновление";
-        DefaultButton = TaskDialogButton.Cancel;
         Heading = "Производится установка обновлений...";
         Icon = TaskDialogIcon.Information;
         ProgressBar = new TaskDialogProgressBar

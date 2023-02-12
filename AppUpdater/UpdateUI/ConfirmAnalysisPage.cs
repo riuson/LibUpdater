@@ -2,15 +2,10 @@
 
 namespace AppUpdater.UpdateUI;
 
-public class ConfirmAnalysisPage : TaskDialogPageWithConfirmation
+public class ConfirmAnalysisPage : ConfirmableTaskDialogPage
 {
     public ConfirmAnalysisPage(IAnalysisResult analysisResult)
     {
-        AllowCancel = true;
-        AllowMinimize = false;
-        Buttons = new TaskDialogButtonCollection { ButtonContinue, ButtonCancel };
-        Caption = "Обновление";
-        DefaultButton = ButtonContinue;
         Expander = new TaskDialogExpander
         {
             CollapsedButtonText = "Подробная информация",
