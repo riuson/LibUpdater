@@ -10,7 +10,7 @@ public class ConfirmableTaskDialogPage : CancellableTaskDialogPage
         _buttonContinue.Click += (sender, args) =>
         {
             _decision = UserDecisions.Continue;
-            _semaphoreDecision.Release();
+            _eventDecision.Set();
         };
         Buttons.Clear();
         Buttons.Add(_buttonContinue);

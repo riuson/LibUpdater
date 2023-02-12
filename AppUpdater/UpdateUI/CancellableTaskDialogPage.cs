@@ -3,17 +3,17 @@
 public class CancellableTaskDialogPage : TaskDialogPage
 {
     protected readonly TaskDialogButton _buttonCancel;
-    protected readonly SemaphoreSlim _semaphoreDecision;
+    protected readonly AutoResetEvent _eventDecision;
     protected UserDecisions _decision = UserDecisions.None;
 
     public CancellableTaskDialogPage()
     {
-        _semaphoreDecision = new SemaphoreSlim(0, 1);
+        _eventDecision = new AutoResetEvent(false);
         _buttonCancel = new TaskDialogButton("Отменить", true, false);
         _buttonCancel.Click += (sender, args) =>
         {
             _decision = UserDecisions.Cancel;
-            _semaphoreDecision.Release();
+            _eventDecision.Set();
         };
 
         AllowCancel = false;
@@ -27,7 +27,7 @@ public class CancellableTaskDialogPage : TaskDialogPage
     public async Task<UserDecisions> WaitDecisionAsync(
         int milliseconds = int.MaxValue)
     {
-        await _semaphoreDecision.WaitAsync(milliseconds);
+        await Task.Run(() => _eventDecision.WaitOne(milliseconds));
         return _decision;
     }
 }
