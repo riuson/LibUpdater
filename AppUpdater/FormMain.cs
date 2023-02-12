@@ -40,9 +40,9 @@ public partial class FormMain : Form
         if (dialog.ShowDialog(this) == DialogResult.OK) textBoxTargetDir.Text = dialog.SelectedPath;
     }
 
-    private async void buttonGo_Click(object sender, EventArgs e)
+    private async void buttonUpdateWithTaskDialog_Click(object sender, EventArgs e)
     {
-        buttonGo.Enabled = false;
+        tableLayoutPanelStart.Enabled = false;
         var token = new CancellationTokenSource();
 
         var options = new UpdateOptions
@@ -193,6 +193,106 @@ public partial class FormMain : Form
 
         await taskUpdate;
 
-        buttonGo.Enabled = true;
+        tableLayoutPanelStart.Enabled = true;
+    }
+
+    private async void buttonUpdateInNoobMode_Click(object sender, EventArgs e)
+    {
+        tableLayoutPanelStart.Enabled = false;
+        var token = new CancellationTokenSource();
+
+        var options = new UpdateOptions
+        {
+            TempDir = _tempDir,
+            TargetDir = textBoxTargetDir.Text,
+            DegreeOfParallelism = 1,
+            UpdatesUri = Convert.ToString(comboBoxUri.SelectedItem),
+            Token = token.Token
+        };
+        var updater = new Updater();
+
+        var taskUpdate = updater.Update(
+            options,
+            _ => Task.FromResult(true),
+            _ => Task.FromResult(true),
+            _ => Task.FromResult(true),
+            _ => Task.FromResult(true),
+            () => Task.CompletedTask,
+            () => Task.CompletedTask,
+            () => Task.CompletedTask,
+            _ => Task.CompletedTask);
+
+        await taskUpdate;
+
+        tableLayoutPanelStart.Enabled = true;
+    }
+
+    private async void buttonUpdateInLauncherMode_Click(object sender, EventArgs e)
+    {
+        tableLayoutPanelStart.Enabled = false;
+        var token = new CancellationTokenSource();
+
+        var options = new UpdateOptions
+        {
+            TempDir = _tempDir,
+            TargetDir = textBoxTargetDir.Text,
+            DegreeOfParallelism = 1,
+            UpdatesUri = Convert.ToString(comboBoxUri.SelectedItem),
+            Token = token.Token
+        };
+        var updater = new Updater();
+        var completed = false;
+
+        IProgress<ProgressEventArgs> progress = new Progress<ProgressEventArgs>(
+            args =>
+            {
+                if (!completed)
+                {
+                    progressBarStatus.Value = args.Percentage;
+                    labelStatus.Text = $"{args.Current:n0} / {args.Total:n0}";
+                }
+            });
+
+        void progressHandler(object sender, ProgressEventArgs args)
+        {
+            progress.Report(args);
+        }
+
+        updater.Progress += progressHandler;
+
+        async Task<bool> notifyAnalysis(IAnalysisResult analysis)
+        {
+            if (analysis.IsEquals)
+                labelStatus.Text = "Отличий не найдено, обновление не требуется.";
+            else
+                labelStatus.Text = $"Есть обновления. Будет загружено {analysis.BytesToDownload:n0} байт.";
+
+            await Task.Delay(2000);
+            return true;
+        }
+
+        async Task notifyCompleted()
+        {
+            updater.Progress -= progressHandler;
+            completed = true;
+            labelStatus.Text = "Завершено.";
+            progressBarStatus.Value = 100;
+            await Task.Delay(2000);
+        }
+
+        var taskUpdate = updater.Update(
+            options,
+            _ => Task.FromResult(true),
+            _ => Task.FromResult(true),
+            notifyAnalysis,
+            _ => Task.FromResult(true),
+            notifyCompleted,
+            () => Task.CompletedTask,
+            () => Task.CompletedTask,
+            _ => Task.CompletedTask);
+
+        await taskUpdate;
+
+        tableLayoutPanelStart.Enabled = true;
     }
 }
