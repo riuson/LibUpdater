@@ -5,7 +5,11 @@ public class ConfirmInstallPage : ConfirmableTaskDialogPage
     public ConfirmInstallPage()
     {
         Heading = "Всё готово для установки обновления.";
-        Footnote = "Отменить процесс будет невозможно!";
-        Icon = TaskDialogIcon.Warning;
+        Footnote = new TaskDialogFootnote
+        {
+            Text = "Отменить процесс будет невозможно!",
+            Icon = TaskDialogIcon.Warning
+        };
+        Icon = TaskDialogIcon.Information;
     }
 }

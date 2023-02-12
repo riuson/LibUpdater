@@ -4,7 +4,14 @@ namespace AppUpdater.UpdateUI;
 
 public class DownloadingArchivesPage : CancellableTaskDialogPage
 {
+    private readonly EventHandler _cancelHandler;
     private readonly IProgress<ProgressEventArgs> _progress;
+
+    public DownloadingArchivesPage(EventHandler cancelHandler)
+        : this()
+    {
+        _cancelHandler = cancelHandler;
+    }
 
     public DownloadingArchivesPage()
     {
@@ -35,6 +42,13 @@ public class DownloadingArchivesPage : CancellableTaskDialogPage
                 noMoreUpdates = true;
             }
         });
+
+        _buttonCancel.Click += buttonCancel_Click;
+    }
+
+    private void buttonCancel_Click(object? sender, EventArgs e)
+    {
+        _cancelHandler?.Invoke(this, EventArgs.Empty);
     }
 
     public void ProgressHandler(object? sender, ProgressEventArgs e)

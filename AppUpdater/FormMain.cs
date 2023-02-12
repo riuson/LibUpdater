@@ -109,7 +109,8 @@ public partial class FormMain : Form
 
             if (decision != UserDecisions.Continue) return false;
 
-            var updateDownloadingArchivesPage = new DownloadingArchivesPage();
+            var updateDownloadingArchivesPage = new DownloadingArchivesPage(
+                (o, e) => token.Cancel());
             updater.Progress += updateDownloadingArchivesPage.ProgressHandler;
 
             currentPage.Navigate(updateDownloadingArchivesPage);
@@ -120,8 +121,6 @@ public partial class FormMain : Form
 
         async Task<bool> confirmApply(IAnalysisResult analysisResult)
         {
-            if (currentPage.BoundDialog is null) return false;
-
             var confirmInstallPage = new ConfirmInstallPage();
             currentPage.Navigate(confirmInstallPage);
             currentPage = confirmInstallPage;
@@ -141,8 +140,6 @@ public partial class FormMain : Form
 
         async Task notifyComplete()
         {
-            if (currentPage.BoundDialog is null) return;
-
             var updateCompletePage = new ResultCompletedPage();
 
             currentPage.Navigate(updateCompletePage);
@@ -153,8 +150,6 @@ public partial class FormMain : Form
 
         async Task notifyNoChanges()
         {
-            if (currentPage.BoundDialog is null) return;
-
             var updateNoChangesPage = new ResultNoChangesPage();
 
             currentPage.Navigate(updateNoChangesPage);
@@ -165,12 +160,20 @@ public partial class FormMain : Form
 
         async Task notifyCancel()
         {
-            if (currentPage.BoundDialog is null) return;
-
             var updateCancelPage = new ResultCancelledPage();
 
             currentPage.Navigate(updateCancelPage);
             currentPage = updateCancelPage;
+
+            await Task.Delay(1000);
+        }
+
+        async Task notifyError(Exception exc)
+        {
+            var updateErrorPage = new ResultErrorPage(exc);
+
+            currentPage.Navigate(updateErrorPage);
+            currentPage = updateErrorPage;
 
             await Task.Delay(1000);
         }
@@ -183,7 +186,8 @@ public partial class FormMain : Form
             confirmApply,
             notifyComplete,
             notifyCancel,
-            notifyNoChanges);
+            notifyNoChanges,
+            notifyError);
 
         TaskDialog.ShowDialog(this, updateRequestingServerPage);
 

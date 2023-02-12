@@ -17,68 +17,85 @@ public class Updater
         Func<IAnalysisResult, Task<bool>> confirmApply,
         Func<Task> notifyComplete,
         Func<Task> notifyCancel,
-        Func<Task> notifyNoChanges)
+        Func<Task> notifyNoChanges,
+        Func<Exception, Task> notifyError)
     {
         var api = new UpdaterAPI();
         api.Progress += OnProgress;
 
-        var versionInfo = await api.GetActualVersionAsync(options);
-
-        if (!await confirmVersion(versionInfo))
+        try
         {
-            await notifyCancel();
-            return;
-        }
+            var versionInfo = await api.GetActualVersionAsync(options);
 
-        var indexItems = await api.GetIndexAsync(options, versionInfo.Path);
-
-        if (!await confirmIndex(indexItems))
-        {
-            await notifyCancel(); 
-            return;
-        }
-
-        var scanner = new TreeScanner();
-        var localItems = await scanner.ScanTreeAsync(
-            options.TargetDir,
-            options.Token,
-            options.DegreeOfParallelism);
-
-        var analyzer = new TreeAnalyzer();
-        var analysisResult = analyzer.Analyze(
-            options.TargetDir,
-            localItems,
-            indexItems);
-
-        if (!analysisResult.IsEquals)
-        {
-            if (!await confirmAnalysis(analysisResult))
+            if (!await confirmVersion(versionInfo))
             {
-                await notifyCancel(); 
+                await notifyCancel();
                 return;
             }
 
-            await api.GetArchiveItemsAsync(options, versionInfo.Path, analysisResult.Added);
+            var indexItems = await api.GetIndexAsync(options, versionInfo.Path);
 
-            if (!await confirmApply(analysisResult))
+            if (!await confirmIndex(indexItems))
             {
-                await notifyCancel(); 
+                await notifyCancel();
                 return;
             }
 
-            await api.CleanupObsoleteItemsAsync(options, analysisResult.Obsolete);
+            var scanner = new TreeScanner();
+            var localItems = await scanner.ScanTreeAsync(
+                options.TargetDir,
+                options.Token,
+                options.DegreeOfParallelism);
 
-            await api.ApplyArchiveItemsAsync(options, analysisResult.Added);
+            var analyzer = new TreeAnalyzer();
+            var analysisResult = analyzer.Analyze(
+                options.TargetDir,
+                localItems,
+                indexItems);
 
+            if (!analysisResult.IsEquals)
+            {
+                if (!await confirmAnalysis(analysisResult))
+                {
+                    await notifyCancel();
+                    return;
+                }
+
+                await api.GetArchiveItemsAsync(options, versionInfo.Path, analysisResult.Added);
+
+                if (!await confirmApply(analysisResult))
+                {
+                    await notifyCancel();
+                    return;
+                }
+
+                await api.CleanupObsoleteItemsAsync(options, analysisResult.Obsolete);
+
+                await api.ApplyArchiveItemsAsync(options, analysisResult.Added);
+            }
+            else
+            {
+                await notifyNoChanges();
+            }
+
+            await notifyComplete();
+        }
+        catch (OperationCanceledException)
+        {
+            if (options.Token.IsCancellationRequested)
+            {
+                await notifyCancel();
+            }
+        }
+        catch (Exception exc)
+        {
+            await notifyError(exc);
+        }
+        finally
+        {
             var remover = new Remover();
             await remover.RemoveChildsAsync(options.TempDir);
         }
-        else
-        {
-            await notifyNoChanges();
-        }
-
-        await notifyComplete();
 
         api.Progress -= OnProgress;
     }
